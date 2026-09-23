@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -15,6 +17,18 @@ android {
         versionName = "1.3"
     }
 
+    // The Play upload key lives outside the repo; without it the "play" build simply isn't signed.
+    val keyFile = rootProject.file(providers.gradleProperty("foxdropKeys").getOrElse("C:/Users/densonjr/foxdrop-keys/keystore.properties"))
+    val playKey = if (keyFile.exists()) Properties().apply { keyFile.inputStream().use(::load) } else null
+    signingConfigs {
+        if (playKey != null) create("upload") {
+            storeFile = file(playKey.getProperty("storeFile"))
+            storePassword = playKey.getProperty("storePassword")
+            keyAlias = playKey.getProperty("keyAlias")
+            keyPassword = playKey.getProperty("keyPassword")
+        }
+    }
+
     buildTypes {
         release {
             // R8 strips the unused material-icons-extended code (30 MB of dex otherwise).
@@ -23,6 +37,13 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             // Signed with the debug key so the APK can be sideloaded without a release keystore.
             signingConfig = signingConfigs.getByName("debug")
+        }
+        // Google Play: same as release, signed with the upload key. `gradlew bundlePlay` -> app-play.aab.
+        // Sideloaded copies stay on the debug key, so the GitHub link keeps updating existing installs.
+        create("play") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.findByName("upload")
+            matchingFallbacks += "release"
         }
     }
     compileOptions {

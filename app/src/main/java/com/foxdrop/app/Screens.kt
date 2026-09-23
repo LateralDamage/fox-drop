@@ -550,6 +550,13 @@ private fun SettingsDialog(vm: FoxViewModel, onTestFox: () -> Unit, onClose: () 
                     }) { Text("Test alert") }
                 }
                 TextButton(onClick = { onClose(); onTestFox() }) { Text("Watch the fox run 🦊") }
+                Text(
+                    "Fox Drop is an unofficial fan app, not made or endorsed by Epic Games. Fortnite is a trademark of Epic Games, Inc.",
+                    fontSize = 11.sp, color = Color.White.copy(alpha = 0.55f),
+                )
+                TextButton(onClick = {
+                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://lateraldamage.github.io/fox-drop/privacy.html")))
+                }) { Text("Privacy policy", fontSize = 12.sp) }
             }
         },
         confirmButton = { TextButton(onClick = onClose) { Text("Done") } },
