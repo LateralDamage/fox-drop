@@ -44,15 +44,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        if (savedInstanceState == null) {
-            foxRun = true   // every fresh launch opens with the running fox
-            handle(intent)
-        }
+        if (savedInstanceState == null) handle(intent)
         setContent {
             MaterialTheme(colorScheme = FoxColors) {
                 val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
-                LaunchedEffect(Unit) {
-                    if (Build.VERSION.SDK_INT >= 33) ask.launch(Manifest.permission.POST_NOTIFICATIONS)
+                LaunchedEffect(foxRun) {
+                    if (!foxRun && Build.VERSION.SDK_INT >= 33 && !Notify.canPost(this@MainActivity)) {
+                        ask.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
                 }
                 Box {
                     FoxDropApp(vm, tab, onTab = { tab = it }, onTestFox = { foxRun = true })
@@ -60,6 +59,23 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    /**
+     * The fox runs every time the app is opened: on a fresh start, or after being away more than a few
+     * seconds. savedInstanceState can't tell these apart, because Android restores saved state after
+     * killing the app in the background. Folding or unfolding the phone takes under a second, so it
+     * doesn't count.
+     */
+    override fun onStart() {
+        super.onStart()
+        val left = FoxApp.leftAt
+        if (left == 0L || System.currentTimeMillis() - left > 3000) foxRun = true
+    }
+
+    override fun onStop() {
+        super.onStop()
+        FoxApp.leftAt = System.currentTimeMillis()
     }
 
     override fun onNewIntent(intent: Intent) {

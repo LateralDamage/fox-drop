@@ -23,6 +23,11 @@ class FoxApp : Application(), SingletonImageLoader.Factory {
     val api by lazy { Api(http) }
     val prefs by lazy { Prefs(this) }
 
+    companion object {
+        /** When the app last left the screen; 0 in a fresh process. MainActivity uses it to replay the fox. */
+        var leftAt = 0L
+    }
+
     override fun onCreate() {
         super.onCreate()
         Notify.createChannels(this)

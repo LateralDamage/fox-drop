@@ -1,8 +1,5 @@
 package com.foxdrop.app
 
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -11,6 +8,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +31,9 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.sin
 
+private const val RUN_MS = 1900L
+private const val FADE_MS = 250L
+
 private val Orange = Color(0xFFF26B1D)
 private val DarkOrange = Color(0xFFC94F0E)
 private val Cream = Color(0xFFFFF4E6)
@@ -41,19 +45,24 @@ private val Sock = Color(0xFF3A1A0C)
  */
 @Composable
 fun RunningFoxOverlay(message: String, onDone: () -> Unit) {
-    val run = remember { Animatable(0f) }
-    val fade = remember { Animatable(1f) }
+    // Timed off the frame clock by hand rather than with Animatable: Compose animations obey the
+    // system animation scale, and with "Remove animations" on they finish instantly and the fox never shows.
+    var elapsed by remember { mutableLongStateOf(0L) }
     LaunchedEffect(Unit) {
-        run.animateTo(1f, tween(1900, easing = LinearEasing))
-        fade.animateTo(0f, tween(250))
+        val start = withFrameMillis { it }
+        while (elapsed < RUN_MS + FADE_MS) {
+            elapsed = withFrameMillis { it } - start
+        }
         onDone()
     }
+    val progress = (elapsed.toFloat() / RUN_MS).coerceIn(0f, 1f)
+    val fade = 1f - ((elapsed - RUN_MS).toFloat() / FADE_MS).coerceIn(0f, 1f)
     Box(
-        Modifier.fillMaxSize().alpha(fade.value).background(Night),
+        Modifier.fillMaxSize().alpha(fade).background(Night),
         contentAlignment = Alignment.Center,
     ) {
         Canvas(Modifier.fillMaxSize()) {
-            val t = run.value
+            val t = progress
             val scale = size.width / 420f
             val foxX = -140f * scale + t * (size.width + 280f * scale)
             val ground = size.height * 0.55f
