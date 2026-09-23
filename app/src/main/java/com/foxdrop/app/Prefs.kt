@@ -14,12 +14,16 @@ enum class AlertKind(val key: String, val title: String, val blurb: String) {
     UPDATES("updates", "Updates & downtime", "New patches, server maintenance, outages, and when servers come back"),
     NEWS("news", "News", "New in-game news posts and Epic notices"),
     COSMETICS("cosmetics", "New cosmetics", "When new skins, emotes and more are added to the game files"),
+    EVENTS("events", "Live events", "A day, an hour and 10 minutes before a live event, when it goes live, and when a new one is announced"),
 }
 
 class Prefs(context: Context) {
     private val sp = context.getSharedPreferences("foxdrop", Context.MODE_PRIVATE)
 
     private val _wishes = MutableStateFlow(loadWishes())
+    private val _myEvents = MutableStateFlow(LiveEvent.parseList(sp.getString("my_events", "[]"), custom = true))
+    /** Events Kollin typed in himself. */
+    val myEvents: StateFlow<List<LiveEvent>> = _myEvents
     val wishes: StateFlow<List<Wish>> = _wishes
 
     fun enabled(kind: AlertKind) = sp.getBoolean("alert_${kind.key}", true)
@@ -41,6 +45,25 @@ class Prefs(context: Context) {
             Wish(it.getString("id"), it.optString("name"), it.optString("type"), it.optString("image").ifBlank { null })
         }
     }.getOrDefault(emptyList())
+
+    fun addEvent(e: LiveEvent) = saveMine(_myEvents.value.filter { it.id != e.id } + e)
+    fun removeEvent(id: String) = saveMine(_myEvents.value.filter { it.id != id })
+    private fun saveMine(list: List<LiveEvent>) {
+        // Anything more than a day over is dropped so the list tidies itself.
+        val keep = list.filter { !it.isOver(java.time.Instant.now().minus(java.time.Duration.ofDays(1))) }
+        _myEvents.value = keep
+        sp.edit().putString("my_events", org.json.JSONArray(keep.map { it.toJson() }).toString()).apply()
+    }
+
+    /** The last events.json that downloaded, kept so alarms can be re-armed after a reboot with no network. */
+    var remoteEvents: String?
+        get() = sp.getString("remote_events", null)
+        set(v) = sp.edit().putString("remote_events", v).apply()
+
+    /** Request codes of the alarms currently set, so the next reschedule can cancel them. */
+    var alarmCodes: Set<String>
+        get() = sp.getStringSet("alarm_codes", emptySet()) ?: emptySet()
+        set(v) = sp.edit().putStringSet("alarm_codes", v).apply()
 
     // Watcher memory: what the last check saw. Null means "never checked", which suppresses alerts on the first pass.
     fun seen(key: String): String? = sp.getString("seen_$key", null)

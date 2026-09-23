@@ -13,6 +13,7 @@ import java.time.Instant
  *  - fortnite-api.com: Item Shop, BR news, newly added cosmetics, cosmetic search
  *  - status.epicgames.com: the Statuspage feed Epic posts outages and maintenance to
  *  - Epic's own fortnite-game content page: in-game notices and the tournament list
+ *  - the Fox Drop events.json on GitHub Pages: live events, kept by hand (see Events.kt)
  */
 data class ShopItem(val id: String, val name: String, val type: String, val rarity: String)
 
@@ -145,6 +146,15 @@ class Api(private val http: OkHttpClient) {
             .filter { it.title.isNotBlank() }
             .distinctBy { it.title }   // Epic lists each cup once per platform
         return EpicGame(notices, tournaments)
+    }
+
+    /** The raw events.json text, so the caller can cache exactly what it parsed. */
+    suspend fun eventsJson(): String = withContext(Dispatchers.IO) {
+        // GitHub Pages caches for 10 minutes; the query string sidesteps a stale edge copy.
+        http.newCall(Request.Builder().url("$EVENTS_URL?t=${System.currentTimeMillis() / 60000}").build()).execute().use { r ->
+            if (!r.isSuccessful) error("HTTP ${r.code} from $EVENTS_URL")
+            r.body.string().also { JSONObject(it) }   // throws on a half-written file instead of caching it
+        }
     }
 
     suspend fun status(): Status {

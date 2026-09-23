@@ -32,6 +32,7 @@ class FoxApp : Application(), SingletonImageLoader.Factory {
         super.onCreate()
         Notify.createChannels(this)
         WatchWorker.schedule(this)
+        EventAlarms.reschedule(this)
     }
 
     override fun newImageLoader(context: PlatformContext) = ImageLoader.Builder(context)

@@ -30,6 +30,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Celebration
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -135,11 +136,15 @@ fun FoxDropApp(vm: FoxViewModel, tab: Tab, onTab: (Tab) -> Unit, onTestFox: () -
                     Triple(Tab.SHOP, "Shop", Icons.Filled.Storefront),
                     Triple(Tab.NEW, "New", Icons.Filled.AutoAwesome),
                     Triple(Tab.NEWS, "News", Icons.Filled.Newspaper),
+                    Triple(Tab.EVENTS, "Events", Icons.Filled.Celebration),
                     Triple(Tab.STATUS, "Servers", Icons.Filled.Dns),
                     Triple(Tab.WISHLIST, "Wishlist", Icons.Filled.Favorite),
                 )
                 items.forEach { (t, label, icon) ->
-                    NavigationBarItem(selected = tab == t, onClick = { onTab(t) }, icon = { Icon(icon, label) }, label = { Text(label) })
+                    NavigationBarItem(
+                        selected = tab == t, onClick = { onTab(t) }, icon = { Icon(icon, label) },
+                        label = { Text(label, maxLines = 1) }, alwaysShowLabel = false,
+                    )
                 }
             }
         },
@@ -149,13 +154,15 @@ fun FoxDropApp(vm: FoxViewModel, tab: Tab, onTab: (Tab) -> Unit, onTestFox: () -
             Tab.NEW -> vm.fresh.loading
             Tab.NEWS -> vm.news.loading || vm.game.loading
             Tab.STATUS -> vm.status.loading
+            Tab.EVENTS -> vm.events.loading
         }
         PullToRefreshBox(isRefreshing = loading, onRefresh = { vm.refresh(tab) }, modifier = Modifier.padding(pad).fillMaxSize()) {
             when (tab) {
-                Tab.SHOP -> ShopScreen(vm)
+                Tab.SHOP -> ShopScreen(vm, onTab)
                 Tab.NEW -> NewScreen(vm)
                 Tab.NEWS -> NewsScreen(vm)
                 Tab.STATUS -> StatusScreen(vm)
+                Tab.EVENTS -> EventsScreen(vm)
                 Tab.WISHLIST -> WishlistScreen(vm, onTab)
             }
         }
@@ -166,18 +173,18 @@ fun FoxDropApp(vm: FoxViewModel, tab: Tab, onTab: (Tab) -> Unit, onTestFox: () -
 // ---------- shared bits ----------
 
 @Composable
-private fun Problem(text: String?) {
+internal fun Problem(text: String?) {
     if (text == null) return
     Text(text, color = Color(0xFFFFB4A8), modifier = Modifier.fillMaxWidth().padding(12.dp))
 }
 
 @Composable
-private fun Spinner() = Box(Modifier.fillMaxWidth().padding(48.dp), contentAlignment = Alignment.Center) {
+internal fun Spinner() = Box(Modifier.fillMaxWidth().padding(48.dp), contentAlignment = Alignment.Center) {
     CircularProgressIndicator(color = FoxOrange)
 }
 
 @Composable
-private fun Header(text: String, sub: String? = null) {
+internal fun Header(text: String, sub: String? = null) {
     Column(Modifier.padding(top = 14.dp, bottom = 4.dp, start = 4.dp)) {
         Text(text, fontWeight = FontWeight.Black, fontSize = 20.sp, color = Color.White)
         if (sub != null) Text(sub, fontSize = 13.sp, color = Color.White.copy(alpha = 0.7f))
@@ -248,7 +255,7 @@ private fun ResetCountdown() {
 }
 
 @Composable
-private fun ShopScreen(vm: FoxViewModel) {
+private fun ShopScreen(vm: FoxViewModel, onTab: (Tab) -> Unit) {
     val wishes by vm.prefs.wishes.collectAsState()
     val wishedIds = wishes.map { it.id }.toSet()
     var filter by remember { mutableStateOf("") }
@@ -260,6 +267,7 @@ private fun ShopScreen(vm: FoxViewModel) {
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) { ResetCountdown() }
+        item(span = { GridItemSpan(maxLineSpan) }) { NextEventStrip(vm, onOpen = { onTab(Tab.EVENTS) }) }
         item(span = { GridItemSpan(maxLineSpan) }) {
             OutlinedTextField(
                 filter, { filter = it }, Modifier.fillMaxWidth(), singleLine = true,
@@ -525,7 +533,7 @@ private fun SettingsDialog(vm: FoxViewModel, onTestFox: () -> Unit, onClose: () 
                             Text(k.title, fontWeight = FontWeight.Bold)
                             Text(k.blurb, fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
                         }
-                        Switch(on, { on = it; vm.prefs.setEnabled(k, it) })
+                        Switch(on, { on = it; vm.prefs.setEnabled(k, it); if (k == AlertKind.EVENTS) vm.eventsChanged() })
                     }
                 }
                 Spacer(Modifier.height(8.dp))

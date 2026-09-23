@@ -57,6 +57,7 @@ class Watcher(private val context: Context, private val api: Api, private val pr
         runCatching { checkCosmetics() }
         runCatching { checkNews() }
         runCatching { checkStatus() }
+        runCatching { checkEvents() }
         prefs.lastCheck = System.currentTimeMillis()
     }
 
@@ -137,6 +138,30 @@ class Watcher(private val context: Context, private val api: Api, private val pr
             game.notices.filter { it.title !in seenNotices }.forEach {
                 alert(AlertKind.NEWS, Tab.NEWS, "📢 ${it.title}", it.body)
             }
+        }
+    }
+
+    private suspend fun checkEvents() {
+        val json = api.eventsJson()
+        prefs.remoteEvents = json
+        val events = LiveEvent.parseList(json, custom = false).filter { !it.isOver() }
+        // Keyed by id and time, so a moved event counts as news too.
+        val sigs = events.associateBy { "${it.id}@${it.start}" }
+        val before = prefs.seenSet("events")
+        prefs.setSeenSet("events", sigs.keys)
+        EventAlarms.reschedule(context)
+        if (before == null) return
+        val knownIds = before.map { it.substringBefore('@') }.toSet()
+        sigs.filterKeys { it !in before }.values.forEach { e ->
+            val whenText = if (e.approx) "Expected ${DateTimeFormatter.ofPattern("EEE MMM d").format(e.start.atZone(ZoneId.systemDefault()))}, time not announced yet"
+                else "Starts ${DateTimeFormatter.ofPattern("EEE MMM d, h:mm a").withZone(ZoneId.systemDefault()).format(e.start)}"
+            val moved = e.id in knownIds
+            alert(
+                AlertKind.EVENTS, Tab.EVENTS,
+                if (moved) "📅 ${e.title}: new time" else "🎉 Live event announced: ${e.title}",
+                whenText + (if (e.note.isNotBlank()) "\n${e.note}" else "") + "\nFox Drop will count down and remind you.",
+                id = ("new" + e.id).hashCode(),
+            )
         }
     }
 

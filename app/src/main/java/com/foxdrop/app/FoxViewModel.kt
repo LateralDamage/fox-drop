@@ -23,6 +23,10 @@ class FoxViewModel(app: Application) : AndroidViewModel(app) {
     var news by mutableStateOf(Load<News>()); private set
     var game by mutableStateOf(Load<EpicGame>()); private set
     var status by mutableStateOf(Load<Status>()); private set
+    /** Tracks whether events.json is loading or failed; the events themselves come from allEvents(prefs). */
+    var events by mutableStateOf(Load<Unit>(if (fox.prefs.remoteEvents != null) Unit else null)); private set
+    /** Bumped whenever the event list changes, so the Events screen recomposes. */
+    var eventsVersion by mutableStateOf(0); private set
 
     var query by mutableStateOf(""); private set
     var results by mutableStateOf(Load<List<Cosmetic>>()); private set
@@ -36,6 +40,21 @@ class FoxViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { news = fetch(news) { api.news() } }
         viewModelScope.launch { game = fetch(game) { api.epicGame() } }
         viewModelScope.launch { status = fetch(status) { api.status() } }
+        viewModelScope.launch { refreshEvents() }
+    }
+
+    private suspend fun refreshEvents() {
+        events = Load(events.value, loading = true)
+        events = fetch(events) { prefs.remoteEvents = api.eventsJson() }
+        eventsChanged()
+    }
+
+    fun addEvent(e: LiveEvent) { prefs.addEvent(e); eventsChanged() }
+    fun removeEvent(id: String) { prefs.removeEvent(id); eventsChanged() }
+
+    fun eventsChanged() {
+        EventAlarms.reschedule(getApplication())
+        eventsVersion++
     }
 
     fun refresh(tab: Tab) = viewModelScope.launch {
@@ -44,6 +63,7 @@ class FoxViewModel(app: Application) : AndroidViewModel(app) {
             Tab.NEW -> fresh = fetch(fresh) { api.newCosmetics() }
             Tab.NEWS -> { news = fetch(news) { api.news() }; game = fetch(game) { api.epicGame() } }
             Tab.STATUS -> status = fetch(status) { api.status() }
+            Tab.EVENTS -> refreshEvents()
         }
     }
 
