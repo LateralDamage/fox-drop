@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A fox head, facing front. 108dp canvas, art inside the 66dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- ears -->
+    <path android:fillColor="#FFF26B1D" android:pathData="M28,50 L30,24 L48,38 Z" />
+    <path android:fillColor="#FFF26B1D" android:pathData="M80,50 L78,24 L60,38 Z" />
+    <path android:fillColor="#FF3A1A0C" android:pathData="M32,44 L33,30 L43,38 Z" />
+    <path android:fillColor="#FF3A1A0C" android:pathData="M76,44 L75,30 L65,38 Z" />
+    <!-- head -->
+    <path android:fillColor="#FFF26B1D" android:pathData="M54,34 C68,34 82,42 84,54 L54,84 L24,54 C26,42 40,34 54,34 Z" />
+    <!-- white cheeks -->
+    <path android:fillColor="#FFFFF4E6" android:pathData="M24,54 C34,54 44,58 50,66 L54,84 Z" />
+    <path android:fillColor="#FFFFF4E6" android:pathData="M84,54 C74,54 64,58 58,66 L54,84 Z" />
+    <!-- eyes -->
+    <path android:fillColor="#FF1B1B1B" android:pathData="M42,52 m-3.5,0 a3.5,3.5 0,1 1,7 0 a3.5,3.5 0,1 1,-7 0" />
+    <path android:fillColor="#FF1B1B1B" android:pathData="M66,52 m-3.5,0 a3.5,3.5 0,1 1,7 0 a3.5,3.5 0,1 1,-7 0" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M43.2,50.8 m-1.2,0 a1.2,1.2 0,1 1,2.4 0 a1.2,1.2 0,1 1,-2.4 0" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M67.2,50.8 m-1.2,0 a1.2,1.2 0,1 1,2.4 0 a1.2,1.2 0,1 1,-2.4 0" />
+    <!-- nose -->
+    <path android:fillColor="#FF1B1B1B" android:pathData="M49,78 L59,78 L54,85 Z" />
+</vector>

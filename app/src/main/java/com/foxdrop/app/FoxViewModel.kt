@@ -1,0 +1,68 @@
+package com.foxdrop.app
+
+import android.app.Application
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+/** A feed that is loading, loaded, or failed; the last good value survives a failed refresh. */
+data class Load<T>(val value: T? = null, val loading: Boolean = false, val error: String? = null)
+
+class FoxViewModel(app: Application) : AndroidViewModel(app) {
+    private val fox = app as FoxApp
+    private val api = fox.api
+    val prefs = fox.prefs
+
+    var shop by mutableStateOf(Load<Shop>()); private set
+    var fresh by mutableStateOf(Load<NewCosmetics>()); private set
+    var news by mutableStateOf(Load<News>()); private set
+    var game by mutableStateOf(Load<EpicGame>()); private set
+    var status by mutableStateOf(Load<Status>()); private set
+
+    var query by mutableStateOf(""); private set
+    var results by mutableStateOf(Load<List<Cosmetic>>()); private set
+    private var searchJob: Job? = null
+
+    init { refreshAll() }
+
+    fun refreshAll() {
+        viewModelScope.launch { shop = fetch(shop) { api.shop() } }
+        viewModelScope.launch { fresh = fetch(fresh) { api.newCosmetics() } }
+        viewModelScope.launch { news = fetch(news) { api.news() } }
+        viewModelScope.launch { game = fetch(game) { api.epicGame() } }
+        viewModelScope.launch { status = fetch(status) { api.status() } }
+    }
+
+    fun refresh(tab: Tab) = viewModelScope.launch {
+        when (tab) {
+            Tab.SHOP, Tab.WISHLIST -> shop = fetch(shop) { api.shop() }
+            Tab.NEW -> fresh = fetch(fresh) { api.newCosmetics() }
+            Tab.NEWS -> { news = fetch(news) { api.news() }; game = fetch(game) { api.epicGame() } }
+            Tab.STATUS -> status = fetch(status) { api.status() }
+        }
+    }
+
+    fun search(q: String) {
+        query = q
+        searchJob?.cancel()
+        if (q.trim().length < 2) { results = Load(); return }
+        searchJob = viewModelScope.launch {
+            delay(350)   // wait for typing to pause
+            results = Load(results.value, loading = true)
+            results = Load(api.search(q))
+        }
+    }
+
+    private suspend fun <T> fetch(old: Load<T>, block: suspend () -> T): Load<T> {
+        return try {
+            Load(block())
+        } catch (e: Exception) {
+            Load(old.value, error = "Couldn't reach the server. Pull down or tap refresh to try again.")
+        }
+    }
+}

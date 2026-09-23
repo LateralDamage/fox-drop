@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fox head silhouette for the status bar; Android draws only the alpha. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M28,50 L30,24 L46,36 C49,34.7 51.5,34 54,34 C56.5,34 59,34.7 62,36 L78,24 L80,50 C82,51.5 83.5,52.8 84,54 L54,84 L24,54 C24.5,52.8 26,51.5 28,50 Z" />
+</vector>
