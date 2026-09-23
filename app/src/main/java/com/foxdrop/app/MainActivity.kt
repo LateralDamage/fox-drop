@@ -44,7 +44,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        if (savedInstanceState == null) handle(intent)
+        if (savedInstanceState == null) {
+            foxRun = true   // every fresh launch opens with the running fox
+            handle(intent)
+        }
         setContent {
             MaterialTheme(colorScheme = FoxColors) {
                 val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
