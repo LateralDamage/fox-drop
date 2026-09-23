@@ -69,3 +69,9 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.work.runtime)
 }
+
+// The Play Console entry was created as foxdrop.myapp, and Play never lets that change. Only the Play
+// build uses it; sideloaded APKs keep com.foxdrop.app, so the two install side by side as separate apps.
+androidComponents {
+    onVariants(selector().withBuildType("play")) { it.applicationId.set("foxdrop.myapp") }
+}
