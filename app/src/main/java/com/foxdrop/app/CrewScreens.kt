@@ -1,5 +1,8 @@
 package com.foxdrop.app
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,6 +49,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -99,6 +103,7 @@ private fun JoinScreen(vm: FoxViewModel, me: Me) {
     var name by remember { mutableStateOf(me.name.orEmpty()) }
     var code by remember { mutableStateOf("") }
     var claiming by remember { mutableStateOf(false) }
+    LaunchedEffect(crew.invite) { crew.invite?.let { code = it } }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(ImageVector.vectorResource(R.drawable.ic_fox_chat), null, tint = FoxOrange, modifier = Modifier.size(36.dp))
@@ -252,6 +257,7 @@ private fun PostActions(vm: FoxViewModel, me: Me, p: Post, onClose: () -> Unit) 
 @Composable
 private fun AdminDialog(vm: FoxViewModel, me: Me, onClose: () -> Unit) {
     val crew = vm.crew
+    val context = LocalContext.current
     var newCode by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onClose,
@@ -262,6 +268,10 @@ private fun AdminDialog(vm: FoxViewModel, me: Me, onClose: () -> Unit) {
                 item {
                     Text("Invite code", fontWeight = FontWeight.Bold)
                     Text("Now: ${crew.inviteCode ?: "not set yet"}", color = Faint)
+                    crew.inviteCode?.let { code ->
+                        OutlinedButton(onClick = { shareInvite(context, code) }) { Text("📨 Share invite link") }
+                        Text("Sends a link by text or email. Tapping it opens Fox Chat with the code filled in.", fontSize = 12.sp, color = Faint)
+                    }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         OutlinedTextField(newCode, { newCode = it.take(40) }, singleLine = true, placeholder = { Text("New code") }, modifier = Modifier.weight(1f))
                         TextButton(enabled = newCode.isNotBlank(), onClick = { crew.setInvite(newCode, onOk = { newCode = "" }) }) { Text("Change") }
@@ -381,4 +391,16 @@ private fun TipDialog(vm: FoxViewModel, tip: Tip, onClose: () -> Unit) {
         onDone = { e -> crew.approve(tip, e); approving = false; onClose() },
         onClose = { approving = false },
     )
+}
+
+/** The web page behind every invite link; it opens the app with the code, or offers the download. */
+fun inviteLink(code: String) = "https://lateraldamage.github.io/fox-drop/join/#" + Uri.encode(code)
+
+/** Opens Android's share sheet (Messages, Gmail and the rest) with the invite link and the code itself. */
+private fun shareInvite(context: Context, code: String) {
+    val text = "Join my Fox Chat crew in Fox Drop! 🦊\n${inviteLink(code)}\n\nInvite code: $code"
+    val send = Intent(Intent.ACTION_SEND).setType("text/plain")
+        .putExtra(Intent.EXTRA_SUBJECT, "Join my Fox Chat crew")
+        .putExtra(Intent.EXTRA_TEXT, text)
+    context.startActivity(Intent.createChooser(send, "Send the invite"))
 }

@@ -595,7 +595,7 @@ function renderChat() {
       <p>${rejoin ? 'The invite code changed. Type the new one to get back in.' : 'Chat with your Fox Drop crew and share live-event tips. Ask the admin for the invite code.'}</p>
       <div><label class="lab" for="join-name">Chat name</label><input class="field" id="join-name" maxlength="20" value="${esc(me.name || '')}"></div>
       <p class="faint small" style="margin:0">Use a nickname, not your real name.</p>
-      <div><label class="lab" for="join-code">Invite code</label><input class="field" id="join-code"></div>
+      <div><label class="lab" for="join-code">Invite code</label><input class="field" id="join-code" value="${esc(invite)}"></div>
       ${problem(crew.notice)}
       <button class="btn" id="join-btn">${rejoin ? 'Get back in' : 'Join the crew'}</button>
       <button class="btn text" id="claim-admin" style="align-self:flex-start">I'm the admin</button>
@@ -762,6 +762,7 @@ function postActions(path) {
 function adminDialog() {
   const r = () => `<h3>🛡️ Admin</h3>
     <b>Invite code</b><div class="faint">Now: ${esc(crew.inviteCode ?? 'not set yet')}</div>
+    ${crew.inviteCode ? '<button class="btn ghost" data-act="share" style="margin-top:6px">📨 Share invite link</button><p class="faint small">Sends a link by text or email. Opening it fills in the code.</p>' : ''}
     <div class="row" style="margin-top:6px"><input class="field grow" id="new-code" maxlength="40" placeholder="New code"><button class="btn" data-act="code">Change</button></div>
     <p class="faint small">Changing it locks everyone out of the chat until they type the new code. You stay in.</p>${problem(crew.notice)}
     <b>Reports (${crew.reports.length})</b>
@@ -780,6 +781,7 @@ function adminDialog() {
     if (!b) return;
     const a = b.dataset.act;
     if (a === 'close') { dialog.onclick = null; closeDialog(); return; }
+    if (a === 'share') shareInvite(crew.inviteCode);
     if (a === 'code') { const v = $('#new-code').value; if (v.trim() && await actions.setInvite(v)) toast('Invite code changed'); }
     if (a === 'del-report') { await actions.remove(b.dataset.path); actions.dismissReport(b.dataset.id); }
     if (a === 'dismiss') actions.dismissReport(b.dataset.id);
@@ -932,6 +934,22 @@ main.addEventListener('keydown', (e) => {
   if (e.target.id?.startsWith('join-') && e.key === 'Enter') $('#join-btn')?.click();
 });
 
+// An invite link (../join/) lands here as #invite=CODE; read it before setTab rewrites the URL.
+const invite = new URLSearchParams(location.hash.slice(1)).get('invite') || '';
+
+const inviteLink = (code) => new URL('../join/', location.href).href + '#' + encodeURIComponent(code);
+
+async function shareInvite(code) {
+  const url = inviteLink(code);
+  const text = `Join my Fox Chat crew in Fox Drop! 🦊
+${url}
+
+Invite code: ${code}`;
+  if (navigator.share) { try { await navigator.share({ title: 'Join my Fox Chat crew', text }); return; } catch (e) { if (e.name === 'AbortError') return; } }
+  try { await navigator.clipboard.writeText(text); toast('Invite copied. Paste it into a text or email.'); }
+  catch { location.href = 'mailto:?subject=' + encodeURIComponent('Join my Fox Chat crew') + '&body=' + encodeURIComponent(text); }
+}
+
 async function sendMessage() {
   const box = $('#composer');
   const text = box?.value || '';
@@ -946,6 +964,6 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catc
 
 setInterval(tick, 1000);
 setInterval(() => refreshAll(), 15 * 60 * 1000);   // same cadence as the phone app's watcher
-setTab(new URLSearchParams(location.search).get('tab') || 'shop');
+setTab(invite ? 'chat' : new URLSearchParams(location.search).get('tab') || 'shop');
 refreshAll();
 startCrew();

@@ -88,6 +88,11 @@ class MainActivity : ComponentActivity() {
     /** A notification tap carries the tab to open and asks for the running fox. */
     private fun handle(intent: Intent?) {
         intent ?: return
+        // An invite link (foxdrop://join?code=...) from the join page opens Chat with the code filled in.
+        intent.data?.takeIf { it.scheme == "foxdrop" && it.host == "join" }?.getQueryParameter("code")?.let {
+            vm.crew.invite = it
+            tab = Tab.CHAT
+        }
         intent.getStringExtra(Notify.EXTRA_TAB)?.let { name ->
             Tab.entries.firstOrNull { it.name == name }?.let {
                 tab = it

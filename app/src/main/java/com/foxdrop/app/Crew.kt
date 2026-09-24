@@ -131,6 +131,8 @@ class CrewModel(private val scope: CoroutineScope, private val prefs: Prefs, pri
     var locked by mutableStateOf(false); private set
     /** The last action that failed, shown under the chat or in a dialog. */
     var notice by mutableStateOf<String?>(null)
+    /** An invite code from a tapped invite link, filled into the join screen. */
+    var invite by mutableStateOf<String?>(null)
 
     var chat by mutableStateOf<List<Post>>(emptyList()); private set
     var tips by mutableStateOf<List<Tip>>(emptyList()); private set
