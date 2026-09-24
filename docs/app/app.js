@@ -243,8 +243,8 @@ function startCrew() {
     if (crew.uid === user.uid) return;
     crew.uid = user.uid;
     // Only server-confirmed copies count; see the matching comment in Crew.kt.
-    onSnapshot(doc(db, 'admins', user.uid), (s) => { if (!s.metadata.hasPendingWrites) { crew.adminDoc = s; updateMe(); } });
-    onSnapshot(doc(db, 'members', user.uid), (s) => { if (!s.metadata.hasPendingWrites) { crew.memberDoc = s; updateMe(); } });
+    onSnapshot(doc(db, 'admins', user.uid), { includeMetadataChanges: true }, (s) => { if (!s.metadata.hasPendingWrites) { crew.adminDoc = s; updateMe(); } });
+    onSnapshot(doc(db, 'members', user.uid), { includeMetadataChanges: true }, (s) => { if (!s.metadata.hasPendingWrites) { crew.memberDoc = s; updateMe(); } });
     onSnapshot(collection(db, 'events'), (s) => {
       state.cloudEvents = s.docs.map((d) => {
         const x = d.data();

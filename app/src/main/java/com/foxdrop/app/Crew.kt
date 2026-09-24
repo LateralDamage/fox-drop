@@ -13,6 +13,7 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.MetadataChanges
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -161,11 +162,12 @@ class CrewModel(private val scope: CoroutineScope, private val prefs: Prefs, pri
                 val db = Crew.db
                 // Only server-confirmed copies count. Right after joining or claiming admin, the listener first
                 // sees the local, unsaved write; opening the feeds then races the server, the rules refuse the
-                // chat listen, and a refused listener never comes back.
-                base += db.collection("admins").document(id).addSnapshotListener { s, _ ->
+                // chat listen, and a refused listener never comes back. MetadataChanges.INCLUDE is what delivers
+                // the confirmation: without it Firestore stays quiet, because the saved copy has the same data.
+                base += db.collection("admins").document(id).addSnapshotListener(MetadataChanges.INCLUDE) { s, _ ->
                     if (s != null && !s.metadata.hasPendingWrites()) { adminDoc = s; update() }
                 }
-                base += db.collection("members").document(id).addSnapshotListener { s, _ ->
+                base += db.collection("members").document(id).addSnapshotListener(MetadataChanges.INCLUDE) { s, _ ->
                     if (s != null && !s.metadata.hasPendingWrites()) { memberDoc = s; update() }
                 }
                 base += db.collection("events").addSnapshotListener { s, _ ->
