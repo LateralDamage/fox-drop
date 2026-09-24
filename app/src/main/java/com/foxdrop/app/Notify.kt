@@ -26,11 +26,12 @@ object Notify {
         AlertKind.COSMETICS to NotificationManager.IMPORTANCE_DEFAULT,
         AlertKind.EVENTS to NotificationManager.IMPORTANCE_HIGH,
         AlertKind.CHAT to NotificationManager.IMPORTANCE_DEFAULT,
+        AlertKind.APP to NotificationManager.IMPORTANCE_DEFAULT,
     )
 
     fun createChannels(context: Context) {
         val nm = context.getSystemService(NotificationManager::class.java)
-        channels.forEach { (kind, importance) ->
+        channels.filterKeys { it in AlertKind.shown }.forEach { (kind, importance) ->
             nm.createNotificationChannel(NotificationChannel(kind.key, kind.title, importance).apply {
                 description = kind.blurb
             })
@@ -41,9 +42,11 @@ object Notify {
         ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) ==
             PackageManager.PERMISSION_GRANTED && NotificationManagerCompat.from(context).areNotificationsEnabled()
 
-    fun post(context: Context, kind: AlertKind, tab: Tab, title: String, text: String, id: Int = title.hashCode()) {
+    /** [link], when given, is opened in the browser on tap instead of opening the app on [tab]. */
+    fun post(context: Context, kind: AlertKind, tab: Tab, title: String, text: String, id: Int = title.hashCode(), link: String? = null) {
         if (!canPost(context)) return
-        val open = Intent(context, MainActivity::class.java)
+        val open = if (link != null) Intent(Intent.ACTION_VIEW, android.net.Uri.parse(link))
+        else Intent(context, MainActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             .putExtra(EXTRA_TAB, tab.name)
             .putExtra(EXTRA_FOX, true)

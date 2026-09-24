@@ -16,6 +16,12 @@ enum class AlertKind(val key: String, val title: String, val blurb: String) {
     COSMETICS("cosmetics", "New cosmetics", "When new skins, emotes and more are added to the game files"),
     EVENTS("events", "Live events", "A day, an hour and 10 minutes before a live event, when it goes live, and when a new one is announced"),
     CHAT("chat", "Fox Chat & tips", "New Fox Chat messages and event tips from your crew"),
+    APP("app", "Fox Drop updates", "When a new version of Fox Drop is ready to download");
+
+    companion object {
+        /** The Play build is updated by Play, so it never offers its own updates. */
+        val shown get() = entries.filter { it != APP || BuildConfig.SELF_UPDATE }
+    }
 }
 
 class Prefs(context: Context) {
@@ -97,6 +103,11 @@ class Prefs(context: Context) {
     fun setSeen(key: String, value: String) = sp.edit().putString("seen_$key", value).apply()
     fun seenSet(key: String): Set<String>? = sp.getStringSet("seenset_$key", null)
     fun setSeenSet(key: String, value: Set<String>) = sp.edit().putStringSet("seenset_$key", value).apply()
+
+    /** A newer Fox Drop the watcher found on GitHub (version and APK link), or null when up to date. */
+    var appUpdate: AppRelease?
+        get() = sp.getString("app_update", null)?.split('\n')?.takeIf { it.size == 3 }?.let { AppRelease(it[0], it[1], it[2]) }
+        set(v) = sp.edit().putString("app_update", v?.let { "${it.version}\n${it.title}\n${it.apkUrl}" }).apply()
 
     var lastCheck: Long
         get() = sp.getLong("last_check", 0)

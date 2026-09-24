@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -532,7 +533,13 @@ private fun SettingsDialog(vm: FoxViewModel, onTestFox: () -> Unit, onClose: () 
                     Text("Notifications are off for Fox Drop. Turn them on in Android Settings → Apps → Fox Drop.", color = Color(0xFFFFB4A8))
                     Spacer(Modifier.height(8.dp))
                 }
-                AlertKind.entries.forEach { k ->
+                vm.prefs.appUpdate?.let { u ->
+                    Button(onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(u.apkUrl))) }) {
+                        Text("Get Fox Drop ${u.version} 🦊")
+                    }
+                    Spacer(Modifier.height(8.dp))
+                }
+                AlertKind.shown.forEach { k ->
                     var on by remember { mutableStateOf(vm.prefs.enabled(k)) }
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
                         Column(Modifier.weight(1f)) {
@@ -556,6 +563,7 @@ private fun SettingsDialog(vm: FoxViewModel, onTestFox: () -> Unit, onClose: () 
                     }) { Text("Test alert") }
                 }
                 TextButton(onClick = { onClose(); onTestFox() }) { Text("Watch the fox run 🦊") }
+                Text("Fox Drop ${BuildConfig.VERSION_NAME}", fontSize = 11.sp, color = Color.White.copy(alpha = 0.55f))
                 Text(
                     "Fox Drop is an unofficial fan app, not made or endorsed by Epic Games. Fortnite is a trademark of Epic Games, Inc.",
                     fontSize = 11.sp, color = Color.White.copy(alpha = 0.55f),

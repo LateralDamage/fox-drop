@@ -50,8 +50,8 @@ class Watcher(private val context: Context, private val api: Api, private val pr
 
     private val clock = DateTimeFormatter.ofPattern("EEE h:mm a").withZone(ZoneId.systemDefault())
 
-    private fun alert(kind: AlertKind, tab: Tab, title: String, text: String, id: Int = title.hashCode()) {
-        if (prefs.enabled(kind)) Notify.post(context, kind, tab, title, text, id)
+    private fun alert(kind: AlertKind, tab: Tab, title: String, text: String, id: Int = title.hashCode(), link: String? = null) {
+        if (prefs.enabled(kind)) Notify.post(context, kind, tab, title, text, id, link)
     }
 
     /** Each feed is checked on its own so one being down doesn't silence the others. */
@@ -65,6 +65,7 @@ class Watcher(private val context: Context, private val api: Api, private val pr
         runCatching { checkChat() }
         runCatching { checkTips() }
         runCatching { checkReports() }
+        runCatching { checkAppUpdate() }
         prefs.lastCheck = System.currentTimeMillis()
     }
 
@@ -116,6 +117,21 @@ class Watcher(private val context: Context, private val api: Api, private val pr
         if (before != null && (ids - before).isNotEmpty()) {
             alert(AlertKind.CHAT, Tab.CHAT, "🚩 ${(ids - before).size} new report(s) in chat", "Open Admin in the Chat tab to review.", id = 6002)
         }
+    }
+
+    /** Sideloaded copies only: a newer GitHub release gets one alert per version, and tapping it downloads the APK. */
+    private suspend fun checkAppUpdate() {
+        if (!BuildConfig.SELF_UPDATE) return
+        val r = api.latestRelease()
+        if (!r.isNewerThan(BuildConfig.VERSION_NAME)) { prefs.appUpdate = null; return }
+        prefs.appUpdate = r
+        if (prefs.seen("app_told") == r.version) return
+        prefs.setSeen("app_told", r.version)
+        alert(
+            AlertKind.APP, Tab.SHOP, "🦊 Fox Drop ${r.version} is ready",
+            "Tap to download it, then open the file and tap Update. Your wishlist and chat stay put.",
+            id = 7001, link = r.apkUrl,
+        )
     }
 
     private suspend fun checkShop() {

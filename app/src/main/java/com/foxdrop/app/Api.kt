@@ -60,6 +60,23 @@ data class Status(
     val allUp get() = services.all { it.status == "operational" }
 }
 
+data class AppRelease(val version: String, val title: String, val apkUrl: String) {
+    /** True when this release is newer than [installed], comparing 1.4.2-style numbers part by part. */
+    fun isNewerThan(installed: String): Boolean {
+        val a = version.split('.').map { it.toIntOrNull() ?: 0 }
+        val b = installed.split('.').map { it.toIntOrNull() ?: 0 }
+        for (i in 0 until maxOf(a.size, b.size)) {
+            val d = a.getOrElse(i) { 0 } - b.getOrElse(i) { 0 }
+            if (d != 0) return d > 0
+        }
+        return false
+    }
+
+    companion object {
+        const val LATEST_APK = "https://github.com/LateralDamage/fox-drop/releases/latest/download/FoxDrop.apk"
+    }
+}
+
 class Api(private val http: OkHttpClient) {
 
     private suspend fun get(url: String): JSONObject = withContext(Dispatchers.IO) {
@@ -182,6 +199,17 @@ class Api(private val http: OkHttpClient) {
             )
         }
         return Status(services, incidents, maint)
+    }
+
+    /** The newest Fox Drop on GitHub. Unauthenticated calls get 60 an hour per IP; the watcher makes 4. */
+    suspend fun latestRelease(): AppRelease {
+        val r = get("https://api.github.com/repos/LateralDamage/fox-drop/releases/latest")
+        val apk = r.optJSONArray("assets").objects().firstOrNull { it.optString("name") == "FoxDrop.apk" }
+        return AppRelease(
+            r.getString("tag_name").removePrefix("v"),
+            r.optString("name").replace('\n', ' '),
+            apk?.str("browser_download_url") ?: AppRelease.LATEST_APK,
+        )
     }
 
     private fun cosmetic(c: JSONObject): Cosmetic {

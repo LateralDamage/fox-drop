@@ -13,8 +13,8 @@ android {
         applicationId = "com.foxdrop.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 6
-        versionName = "1.4.1"
+        versionCode = 7
+        versionName = "1.4.2"
 
         // Chat and crew tips run on Firebase. These three values are public identifiers, not secrets
         // (the Firestore rules do the guarding). They live in firebase.properties; without it chat stays hidden.
@@ -24,6 +24,8 @@ android {
         buildConfigField("String", "FIREBASE_API_KEY", "\"${fb.getProperty("apiKey", "")}\"")
         buildConfigField("String", "FIREBASE_APP_ID", "\"${fb.getProperty("appId", "")}\"")
         buildConfigField("String", "FIREBASE_PROJECT_ID", "\"${fb.getProperty("projectId", "")}\"")
+        // Sideloaded builds watch GitHub releases and offer the new APK. Play forbids self-updating, so "play" turns it off.
+        buildConfigField("boolean", "SELF_UPDATE", "true")
     }
 
     // The Play upload key lives outside the repo; without it the "play" build simply isn't signed.
@@ -52,6 +54,7 @@ android {
         create("play") {
             initWith(getByName("release"))
             signingConfig = signingConfigs.findByName("upload")
+            buildConfigField("boolean", "SELF_UPDATE", "false")
             matchingFallbacks += "release"
         }
     }
