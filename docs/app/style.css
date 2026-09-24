@@ -145,3 +145,14 @@ dialog .scroll { max-height: 300px; overflow-y: auto; display: flex; flex-direct
 .switch input { width: 20px; height: 20px; accent-color: var(--orange); }
 #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #000; color: #fff; padding: 10px 18px; border-radius: 999px; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
 #toast.show { opacity: 0.9; }
+
+/* Sprites tab */
+.sprite-bar { height: 6px; border-radius: 3px; background: var(--night, #120B2E); margin-top: 6px; overflow: hidden; }
+.sprite-bar span { display: block; height: 100%; background: var(--orange); }
+.sprite-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 10px; margin: 10px 0; }
+.sprite-grid .card + .card { margin-top: 0; }
+.card.sprite { display: flex; flex-direction: column; gap: 4px; border: 2px solid transparent; }
+.card.sprite.done { border-color: #E8C02A; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.chip { border: 2px solid var(--c); color: var(--c); background: none; border-radius: 999px; padding: 6px 12px; font-weight: 700; font-size: 13px; }
+.chip.on { background: var(--c); color: #120B2E; }

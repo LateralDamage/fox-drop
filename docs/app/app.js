@@ -21,6 +21,8 @@ const auth = getAuth(fb);
 const db = getFirestore(fb);
 
 const EVENTS_URL = 'https://lateraldamage.github.io/fox-drop/events.json';
+// Hand-kept Sprite list, shared with the Android app (Sprites.kt); progress stays in this browser.
+const SPRITES_URL = 'https://lateraldamage.github.io/fox-drop/sprites.json';
 const CREW = 'crew-';
 const LIVE_MS = 30 * 60 * 1000;
 
@@ -179,6 +181,9 @@ const state = {
   query: '',
   results: null,
   wishes: store('wishes', []),
+  sprites: { value: store('spriteList', null), loading: false, error: null },
+  spritesGot: new Set(store('spritesGot', [])),
+  spritesNeedOnly: false,
 };
 const wishedIds = () => new Set(state.wishes.map((w) => w.id));
 
@@ -201,7 +206,7 @@ async function fetchInto(key, loader) {
 }
 
 function tabFeed() {
-  return { shop: 'shop', wishlist: 'shop', new: 'fresh', news: 'news', servers: 'status' }[state.tab];
+  return { shop: 'shop', wishlist: 'shop', new: 'fresh', news: 'news', servers: 'status', sprites: 'sprites' }[state.tab];
 }
 
 async function refreshEvents() {
@@ -217,6 +222,7 @@ function refresh(tab = state.tab) {
   if (tab === 'news') fetchInto('news', loadNews);
   if (tab === 'servers') fetchInto('status', loadStatus);
   if (tab === 'events') refreshEvents();
+  if (tab === 'sprites') fetchInto('sprites', loadSprites);
 }
 
 function refreshAll() {
@@ -225,6 +231,24 @@ function refreshAll() {
   fetchInto('news', loadNews);
   fetchInto('status', loadStatus);
   refreshEvents();
+  fetchInto('sprites', loadSprites);
+}
+
+// Same shape as SpriteList.parse in Sprites.kt: a family without its own "variants" comes in all of them.
+async function loadSprites() {
+  const r = await fetch(SPRITES_URL + '?t=' + Math.floor(Date.now() / 60000));
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const j = await r.json();
+  const all = j.variants.map((v) => v.id);
+  const list = { ...j, sprites: j.sprites.map((s) => ({ ...s, variants: s.variants || all })) };
+  save('spriteList', list);
+  return list;
+}
+
+function toggleSprite(key) {
+  if (state.spritesGot.has(key)) state.spritesGot.delete(key); else state.spritesGot.add(key);
+  save('spritesGot', [...state.spritesGot]);
+  render();
 }
 
 // ---------- the crew (port of Crew.kt) ----------
@@ -570,6 +594,49 @@ function renderWishlist() {
   </div>`;
 }
 
+const SPRITE_COLORS = { base: 'var(--sky)', gold: '#E8C02A', cheat: '#B57BFF', loot: '#4CD18A', bounty: '#FF6B6B' };
+
+function renderSprites() {
+  const load = state.sprites;
+  const list = load.value;
+  if (!list) return `<div class="wrap">${problem(load.error)}${load.loading ? spinner : ''}</div>`;
+  const got = state.spritesGot;
+  const keys = list.sprites.flatMap((s) => s.variants.map((v) => `${s.id}:${v}`));
+  const have = keys.filter((k) => got.has(k)).length;
+  const names = Object.fromEntries(list.variants.map((v) => [v.id, v.name]));
+  const shown = state.spritesNeedOnly ? list.sprites.filter((s) => s.variants.some((v) => !got.has(`${s.id}:${v}`))) : list.sprites;
+  const notes = list.variants.filter((v) => v.note).map((v) => `${v.name}: ${v.note.toLowerCase()}.`).join(' ');
+  return `<div class="wrap">
+    <div class="card">
+      <h2 class="header" style="margin:0">Sprite collection</h2>
+      <div style="color:var(--sky);font-size:14px">${esc(list.season)}</div>
+      <div style="margin-top:10px"><b style="font-size:34px;color:var(--orange)">${have}</b> <span class="faint">of ${keys.length} collected</span></div>
+      <div class="sprite-bar"><span style="width:${keys.length ? (100 * have) / keys.length : 0}%"></span></div>
+      <div class="row" style="margin-top:12px;gap:8px">
+        <button class="btn ${state.spritesNeedOnly ? 'ghost' : ''}" data-sprites-need="0">All Sprites</button>
+        <button class="btn ${state.spritesNeedOnly ? '' : 'ghost'}" data-sprites-need="1">Still need</button>
+      </div>
+    </div>
+    ${problem(load.loading ? null : load.error)}
+    ${shown.length ? '' : '<p style="padding:16px"><b>You\'ve collected every Sprite this season! 🦊🏆</b></p>'}
+    <div class="sprite-grid">${shown.map((s) => {
+      const n = s.variants.filter((v) => got.has(`${s.id}:${v}`)).length;
+      const done = n === s.variants.length;
+      return `<div class="card sprite${done ? ' done' : ''}">
+        <div class="row"><b class="grow" style="font-size:18px">${esc(s.name)}</b><b style="color:${done ? '#E8C02A' : 'var(--faint)'}">${done ? '🏆 all ' + s.variants.length : n + ' / ' + s.variants.length}</b></div>
+        ${s.ability ? `<div>${esc(s.ability)}</div>` : ''}
+        ${s.where ? `<div class="faint small">📍 ${esc(s.where)}</div>` : ''}
+        <div class="chips">${s.variants.map((v) => {
+          const key = `${s.id}:${v}`;
+          const on = got.has(key);
+          return `<button class="chip${on ? ' on' : ''}" style="--c:${SPRITE_COLORS[v] || 'var(--sky)'}" data-sprite="${esc(key)}" aria-pressed="${on}">${on ? '✓ ' : ''}${esc(names[v] || v)}</button>`;
+        }).join('')}</div>
+      </div>`;
+    }).join('')}</div>
+    <p class="faint small">Click a version when you've collected it. Sprites come from Cheat Code chests: find the injector and punch in the arrows. ${esc(notes)} List updated ${esc(list.updated)}. Your checklist is saved in this browser only.</p>
+  </div>`;
+}
+
 function renderEvents() {
   const events = allEvents();
   const next = events[0];
@@ -659,7 +726,7 @@ function renderMessages() {
 
 // ----- tab switching -----
 
-const renderers = { shop: renderShop, new: renderNew, news: renderNews, events: renderEvents, chat: renderChat, servers: renderServers, wishlist: renderWishlist };
+const renderers = { shop: renderShop, new: renderNew, news: renderNews, events: renderEvents, chat: renderChat, servers: renderServers, wishlist: renderWishlist, sprites: renderSprites };
 
 function render() {
   // Don't rebuild the page under someone's cursor while they type in a search box or the chat.
@@ -897,6 +964,12 @@ function settingsDialog() {
 
 // ---------- wiring ----------
 
+main.addEventListener('click', (e) => {
+  const chip = e.target.closest('[data-sprite]');
+  if (chip) { toggleSprite(chip.dataset.sprite); return; }
+  const need = e.target.closest('[data-sprites-need]');
+  if (need) { state.spritesNeedOnly = need.dataset.spritesNeed === '1'; render(); }
+});
 $('#tabs').addEventListener('click', (e) => { const b = e.target.closest('button[data-tab]'); if (b) setTab(b.dataset.tab); });
 $('#refresh').addEventListener('click', () => refresh());
 $('#settings').addEventListener('click', settingsDialog);
