@@ -4,7 +4,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
 import {
-  getFirestore, collection, doc, onSnapshot, query, orderBy, limit, addDoc, setDoc, updateDoc, deleteDoc,
+  getFirestore, collection, doc, getDoc, onSnapshot, query, orderBy, limit, addDoc, setDoc, updateDoc, deleteDoc,
   serverTimestamp, writeBatch, Timestamp,
 } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
 
@@ -303,6 +303,7 @@ function resubscribe() {
     crew.feeds.push(onSnapshot(collection(db, 'members'), (s) => {
       crew.members = s.docs.map((d) => ({ uid: d.id, name: d.data().name || '', muted: d.data().muted === true, banned: d.data().banned === true }))
         .sort((a, b) => a.name.localeCompare(b.name));
+      reserveNames(s.docs);
       refreshOpenDialog();
     }));
     crew.feeds.push(onSnapshot(collection(db, 'reports'), (s) => {
@@ -336,9 +337,23 @@ const tipEvent = (t) => ({
 async function act(denied, fn) {
   try { await fn(); crew.notice = null; return true; }
   catch (e) {
-    crew.notice = e.code === 'permission-denied' ? denied : "That didn't go through. Check your internet and try again.";
+    crew.notice = e.name === 'NameTaken' ? 'Someone in the crew already uses that name. Pick another one.'
+      : e.code === 'permission-denied' ? denied : "That didn't go through. Check your internet and try again.";
     render(); refreshOpenDialog();
     return false;
+  }
+}
+// The names/ id for a chat name; must match nameKey() in Crew.kt (case and extra spaces don't count).
+const nameKey = (name) => 'n_' + encodeURIComponent(name.trim().replace(/[ \t\n\r\v\f]+/g, ' ').toLowerCase());
+
+// Admin only: reserve names of members who joined before names/ existed, once per session.
+const reservedNames = new Set();
+async function reserveNames(docs) {
+  for (const d of docs) {
+    const name = d.data().name;
+    if (!name || reservedNames.has(nameKey(name))) continue;
+    reservedNames.add(nameKey(name));
+    try { const c = doc(db, 'names', nameKey(name)); if (!(await getDoc(c)).exists()) await setDoc(c, { uid: d.id }); } catch {}
   }
 }
 const stamp = (fields) => ({ uid: crew.me.uid, name: crew.me.displayName, at: serverTimestamp(), ...fields });
@@ -346,9 +361,20 @@ const whenFields = (e) => (e.approx ? { date: dayString(e.start) } : { start: Ti
 
 const actions = {
   join: (name, code) => act('That invite code didn\'t work. Check it with the admin.', async () => {
+    // Same as CrewModel.join on Android: the name is reserved in names/ in the same batch as the join.
     const ref = doc(db, 'members', crew.uid);
-    if (crew.memberDoc?.exists()) await updateDoc(ref, { code: code.trim(), name: name.trim() });
-    else await setDoc(ref, { code: code.trim(), name: name.trim(), muted: false, banned: false, joined: serverTimestamp() });
+    const claim = doc(db, 'names', nameKey(name));
+    const owner = (await getDoc(claim)).data()?.uid;
+    if (owner && owner !== crew.uid) throw Object.assign(new Error('name taken'), { name: 'NameTaken' });
+    const oldName = crew.memberDoc?.data()?.name;
+    let old = oldName ? doc(db, 'names', nameKey(oldName)) : null;
+    if (old && (old.id === claim.id || (await getDoc(old)).data()?.uid !== crew.uid)) old = null;
+    const b = writeBatch(db);
+    if (crew.memberDoc?.exists()) b.update(ref, { code: code.trim(), name: name.trim() });
+    else b.set(ref, { code: code.trim(), name: name.trim(), muted: false, banned: false, joined: serverTimestamp() });
+    if (!owner) b.set(claim, { uid: crew.uid });
+    if (old) b.delete(old);
+    await b.commit();
   }),
   claimAdmin: (name, code) => act("That admin code didn't work.", () => setDoc(doc(db, 'admins', crew.uid), { code: code.trim(), name: name.trim() })),
   send: (text) => act("You can't post right now.", () => addDoc(collection(db, 'chat'), stamp({ text: text.trim() }))),

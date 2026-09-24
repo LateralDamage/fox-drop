@@ -71,6 +71,16 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // A chat name, held by the first phone to use it, so two people can't share one. The id is "n_" plus
+    // the lower-cased, URL-encoded name (nameKey() in the apps). get only: nobody can list the names.
+    // members/ doesn't require a claim yet, so apps older than 1.4.4 can still join; they just skip the check.
+    match /names/{key} {
+      allow get: if signedIn();
+      allow create: if signedIn() && request.resource.data.keys().hasOnly(['uid'])
+        && (request.resource.data.uid == me() || isAdmin());
+      allow delete: if signedIn() && (resource.data.uid == me() || isAdmin());
+    }
+
     match /chat/{id} {
       allow read: if isMember();
       allow create: if canPost() && authored(request.resource.data)

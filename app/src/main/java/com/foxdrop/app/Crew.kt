@@ -124,6 +124,15 @@ fun tipOf(d: DocumentSnapshot): Tip? = Tip(
 )
 
 /** Live crew state for the screens. Firestore listeners call back on the main thread. */
+/** Thrown by [CrewModel.join] when another phone already holds the chat name. */
+class NameTaken : Exception()
+
+/**
+ * The names/ document id for a chat name: case and extra spaces don't make a different name.
+ * The "n_" prefix keeps ids like "." or "__x__" legal. docs/app/app.js builds the same key; keep them in step.
+ */
+fun nameKey(name: String) = "n_" + android.net.Uri.encode(name.trim().replace(Regex("[ \\t\\n\\r\\u000B\\u000C]+"), " ").lowercase())
+
 class CrewModel(private val scope: CoroutineScope, private val prefs: Prefs, private val onEvents: () -> Unit) {
     var me by mutableStateOf<Me?>(null); private set
     var signInError by mutableStateOf<String?>(null); private set
@@ -226,9 +235,12 @@ class CrewModel(private val scope: CoroutineScope, private val prefs: Prefs, pri
             .addSnapshotListener { s, _ -> if (s != null) tips = s.documents.mapNotNull(::tipOf).filter { it.status == "pending" } }
         if (m.admin) {
             feeds += db.collection("members").addSnapshotListener { s, _ ->
-                if (s != null) members = s.documents.map {
-                    Member(it.id, it.getString("name").orEmpty(), it.getBoolean("muted") == true, it.getBoolean("banned") == true)
-                }.sortedBy { it.name.lowercase() }
+                if (s != null) {
+                    members = s.documents.map {
+                        Member(it.id, it.getString("name").orEmpty(), it.getBoolean("muted") == true, it.getBoolean("banned") == true)
+                    }.sortedBy { it.name.lowercase() }
+                    reserveNames(s.documents)
+                }
             }
             feeds += db.collection("reports").addSnapshotListener { s, _ ->
                 if (s != null) reports = s.documents.map {
@@ -272,6 +284,8 @@ class CrewModel(private val scope: CoroutineScope, private val prefs: Prefs, pri
                 block()
                 notice = null
                 onOk()
+            } catch (e: NameTaken) {
+                notice = "Someone in the crew already uses that name. Pick another one."
             } catch (e: Exception) {
                 notice = if ((e as? FirebaseFirestoreException)?.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) denied
                     else "That didn't go through. Check your internet and try again."
@@ -284,13 +298,43 @@ class CrewModel(private val scope: CoroutineScope, private val prefs: Prefs, pri
         return mapOf("uid" to m.uid, "name" to m.displayName, "at" to FieldValue.serverTimestamp()) + fields
     }
 
+    /**
+     * Joins (or rejoins, or renames) and reserves the name in names/ in the same batch, so a wrong invite
+     * code reserves nothing. A name someone else already holds is refused before anything is written.
+     */
     fun join(name: String, code: String, onOk: () -> Unit = {}) = act("That invite code didn't work. Check it with the admin.", onOk) {
-        val ref = Crew.db.collection("members").document(uid!!)
-        if (memberDoc?.exists() == true) ref.update(mapOf("code" to code.trim(), "name" to name.trim())).await()
-        else ref.set(mapOf(
-            "code" to code.trim(), "name" to name.trim(), "muted" to false, "banned" to false,
-            "joined" to FieldValue.serverTimestamp(),
-        )).await()
+        val db = Crew.db
+        val id = uid!!
+        val ref = db.collection("members").document(id)
+        val claim = db.collection("names").document(nameKey(name))
+        val owner = claim.get().await().getString("uid")
+        if (owner != null && owner != id) throw NameTaken()
+        // Renaming frees the old name, but only if this phone is the one holding it.
+        val old = memberDoc?.getString("name")?.let { db.collection("names").document(nameKey(it)) }
+            ?.takeIf { it.id != claim.id }
+            ?.takeIf { it.get().await().getString("uid") == id }
+        db.runBatch { b ->
+            if (memberDoc?.exists() == true) b.update(ref, mapOf("code" to code.trim(), "name" to name.trim()))
+            else b.set(ref, mapOf(
+                "code" to code.trim(), "name" to name.trim(), "muted" to false, "banned" to false,
+                "joined" to FieldValue.serverTimestamp(),
+            ))
+            if (owner == null) b.set(claim, mapOf("uid" to id))
+            if (old != null) b.delete(old)
+        }.await()
+    }
+
+    /** Admin only: reserves the names of members who joined before names/ existed, once per session. */
+    private val reserved = mutableSetOf<String>()
+    private fun reserveNames(docs: List<DocumentSnapshot>) = scope.launch {
+        for (d in docs) {
+            val key = nameKey(d.getString("name") ?: continue)
+            if (!reserved.add(key)) continue
+            runCatching {
+                val claim = Crew.db.collection("names").document(key)
+                if (!claim.get().await().exists()) claim.set(mapOf("uid" to d.id)).await()
+            }
+        }
     }
 
     fun claimAdmin(name: String, code: String, onOk: () -> Unit = {}) = act("That admin code didn't work.", onOk) {
