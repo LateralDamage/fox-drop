@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fox Drop Privacy</title>
-<meta name="description" content="Privacy policy for the Fox Drop Android app.">
+<meta name="description" content="Privacy policy for Fox Drop on Android and Windows, including Fox Chat.">
 <meta name="theme-color" content="#120B2E">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
@@ -31,12 +31,50 @@
 
   <div class="card">
     <h2>The short version</h2>
-    <p>Fox Drop doesn't collect, store or share any personal information. There are no accounts, no ads, no analytics and no tracking.</p>
+    <p>Fox Drop has no ads, no analytics and no tracking, and never asks for your name, email or phone number.
+      Your wishlist and settings stay on your device. The only things that leave it are what you choose to post in
+      <b>Fox Chat</b>, the optional invite-only chat: your chat nickname, your messages and your event tips.
+      Those are stored with Google Firebase so your crew can see them.</p>
+    <p class="fine">This policy covers the Fox Drop Android app (from Google Play or the download page) and
+      Fox Drop for Windows at <a href="https://lateraldamage.github.io/fox-drop/app/">lateraldamage.github.io/fox-drop/app</a>.</p>
   </div>
 
   <div class="card">
-    <h2>What stays on your phone</h2>
-    <p>Your wishlist, the live events you add, your alert settings and a note of what the app last saw (so it knows what's new) are saved only on your device. They are never uploaded. Uninstalling the app deletes them.</p>
+    <h2>What stays on your device</h2>
+    <p>Your wishlist, the live events you add for yourself, your alert settings, people you've hidden in chat, and a note
+      of what the app last saw (so it knows what's new) are saved only on your phone, or in your browser for the Windows app.
+      They are never uploaded. Uninstalling the app, or clearing the site's data in your browser, deletes them.</p>
+  </div>
+
+  <div class="card">
+    <h2>Your anonymous ID</h2>
+    <p>The first time Fox Drop opens, it signs in to Google Firebase anonymously. That gives this copy of the app a random
+      ID with no name, email or phone number attached. The ID is what lets everyone see official live events,
+      and what lets Fox Chat know which messages are yours. Firebase, like any server, also sees your IP address when
+      the app connects. Uninstalling the app removes the ID from your device.</p>
+  </div>
+
+  <div class="card">
+    <h2>Fox Chat (optional)</h2>
+    <p>Fox Chat only works if you join with an invite code from the admin. If you don't join, nothing below applies to you.
+      When you join or post, Fox Drop stores the following with Google Firebase (Cloud Firestore, servers in the United States):</p>
+    <ul>
+      <li>the chat nickname you choose (please use a nickname, not your real name)</li>
+      <li>the messages you send, the event tips you share and the comments you leave, each with the time it was sent</li>
+      <li>reports you make about a message, which only the admin can see</li>
+      <li>whether the admin has muted or banned your ID</li>
+    </ul>
+    <p><b>Who can see it:</b> other people in the crew (everyone who has the current invite code) and the admin.
+      Only the admin can see reports, the member list and the invite code. Approved tips become official events,
+      which every Fox Drop user sees as a title, time and note, without your name.</p>
+    <p><b>How long it's kept:</b> until the admin deletes it. You can delete your own tips yourself. To have your messages
+      or your nickname removed, ask the admin in the chat or <a href="https://github.com/LateralDamage/fox-drop/issues">open an issue on GitHub</a>
+      (you don't need to say who you are in public; just ask for a way to reach the admin).</p>
+    <p><b>Keeping it safe:</b> everything is sent over encrypted connections (HTTPS). Server-side security rules stop anyone
+      without the invite code from reading the chat, and stop members from changing anyone else's posts.
+      Anyone can report a message to the admin or hide everything from a person.</p>
+    <p class="fine">Fox Drop doesn't sell or share this with anyone else and doesn't use it for ads. Google stores and processes it
+      for Fox Drop under the <a href="https://firebase.google.com/support/privacy">Firebase privacy and security terms</a>.</p>
   </div>
 
   <div class="card">
@@ -45,7 +83,9 @@
     <ul>
       <li><a href="https://fortnite-api.com">fortnite-api.com</a> for the Item Shop, news and cosmetics</li>
       <li><a href="https://status.epicgames.com">status.epicgames.com</a> for server status</li>
-      <li>Epic Games' public Fortnite content page for in-game notices and tournaments</li>
+      <li>Epic Games' public Fortnite content page for in-game notices and tournaments (Android app only)</li>
+      <li>Google Firebase for official live events and, if you join, Fox Chat (see above)</li>
+      <li>Google's gstatic.com, which serves the Firebase code the Windows app runs</li>
       <li><a href="https://lateraldamage.github.io/fox-drop/">lateraldamage.github.io</a> (GitHub Pages) for the live-event list</li>
       <li>The image hosts those services link to, for item pictures</li>
     </ul>
@@ -55,7 +95,8 @@
   <div class="card">
     <h2>Permissions</h2>
     <ul>
-      <li><b>Notifications</b>: to alert you about the shop, updates, news and live events.</li>
+      <li><b>Notifications</b>: to alert you about the shop, updates, news, live events and new Fox Chat messages and tips.
+        The Windows app asks your browser for the same permission and only notifies you while it's open.</li>
       <li><b>Alarms &amp; reminders</b>: so live-event reminders arrive on time.</li>
       <li><b>Run at startup</b>: to set event reminders again after the phone restarts.</li>
       <li><b>Internet</b>: to download the information above.</li>
@@ -64,7 +105,9 @@
 
   <div class="card">
     <h2>Children</h2>
-    <p>Fox Drop is meant for players aged 13 and up, matching Fortnite's Teen rating. It collects no information from anyone, including children.</p>
+    <p>Fox Drop is meant for players aged 13 and up, matching Fortnite's Teen rating, and isn't directed at children under 13.
+      Fox Chat is invite-only and moderated by the admin, and asks for a nickname rather than a real name.
+      If you believe a child under 13 has posted in Fox Chat, ask the admin or open an issue on GitHub and their posts will be deleted.</p>
   </div>
 
   <div class="card">

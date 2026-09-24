@@ -40,8 +40,12 @@ NEWS & NEW COSMETICS
 • In-game news and Epic notices
 • Everything newly added to the game files
 
-NO ACCOUNT, NO ADS, NO TRACKING
-Fox Drop doesn't ask you to log in and doesn't collect any personal information. Your wishlist stays on your phone.
+FOX CHAT (INVITE ONLY)
+• Chat with your crew and share live-event tips
+• Invite code from the admin; report or hide anyone
+
+NO ADS, NO TRACKING
+No email or phone number needed, and your wishlist stays on your phone. Fox Chat stores only the nickname and messages you choose to post.
 
 Fox Drop is an unofficial fan app. It is not made, endorsed or sponsored by Epic Games. Fortnite is a trademark of Epic Games, Inc. Game data comes from fortnite-api.com and Epic's public status page.
 ```
@@ -62,11 +66,11 @@ Fox Drop is an unofficial fan app. It is not made, endorsed or sponsored by Epic
 |---|---|
 | Privacy policy | https://lateraldamage.github.io/fox-drop/privacy.html |
 | Ads | No, the app has no ads |
-| App access | All functionality is available without special access (no login) |
-| Content rating (IARC) | Category: Reference, News, or Educational. No violence, no sexual content, no profanity, no drugs, no gambling. No user interaction or sharing, no location, no digital purchases. Expect **Everyone / PEGI 3**; Teen is fine if it comes out that way. |
+| App access | **Some functionality is restricted.** Instructions: "Fox Chat (the Chat tab) is invite-only. Open the Chat tab, type any nickname and the invite code, then tap Join the crew." Give the current code from Firestore config/invite (change it back afterwards if you like). Everything else needs no login. |
+| Content rating (IARC) | Category: Reference, News, or Educational. No violence, no sexual content, no profanity, no drugs, no gambling. **Users can interact / exchange content: Yes** (Fox Chat, invite-only, moderated, with report and hide). No location sharing, no digital purchases. The rating may come out Teen because of chat; that matches Fortnite. |
 | Target audience | **13-15, 16-17, 18+**. Do NOT tick under-13 boxes (that pulls in the Families policy). "Could it unintentionally appeal to children?": answer honestly; if it asks, the cartoon fox might, so explain it's a companion to a Teen-rated game. |
 | News app | No (it shows game news, but it isn't a news publisher) |
-| Data safety | **No data collected, no data shared.** Data encrypted in transit: Yes (all HTTPS). Deletion: no data collected, so nothing to delete. |
+| Data safety | **Collects data: Yes. Shares data: No** (Google Firebase is a service provider, which Play does not count as sharing). Encrypted in transit: Yes. Users can request deletion: Yes (via the admin or a GitHub issue; see privacy policy). Data types, all for **App functionality**, none for ads or analytics: **Personal info → Name** (the chat nickname; optional). **Messages → Other in-app messages** (chat, tips, comments; optional). **Device or other IDs** (the anonymous Firebase ID; required, created on first launch). Processed ephemerally: No for all three. |
 | Government app | No |
 | Financial features | None |
 | Health | None |
