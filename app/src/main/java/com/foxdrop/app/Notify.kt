@@ -11,7 +11,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 
-enum class Tab { SHOP, NEW, NEWS, EVENTS, CHAT, STATUS, WISHLIST }
+enum class Tab { SHOP, NEW, NEWS, EVENTS, CHAT, STATUS, WISHLIST, SPRITES }
 
 object Notify {
     const val EXTRA_TAB = "tab"

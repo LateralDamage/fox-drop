@@ -174,6 +174,14 @@ class Api(private val http: OkHttpClient) {
         }
     }
 
+    /** The raw sprites.json text, checked by parsing before anyone caches it. */
+    suspend fun spritesJson(): String = withContext(Dispatchers.IO) {
+        http.newCall(Request.Builder().url("$SPRITES_URL?t=${System.currentTimeMillis() / 60000}").build()).execute().use { r ->
+            if (!r.isSuccessful) error("HTTP ${r.code} from $SPRITES_URL")
+            r.body.string().also { SpriteList.parse(it) }
+        }
+    }
+
     suspend fun status(): Status {
         val s = get("https://status.epicgames.com/api/v2/summary.json")
         val comps = s.optJSONArray("components").objects()

@@ -1,0 +1,33 @@
+{
+  "season": "Chapter 7 Season 4: Override",
+  "updated": "2026-09-24",
+  "variants": [
+    { "id": "base", "name": "Base" },
+    { "id": "gold", "name": "Gold" },
+    { "id": "cheat", "name": "Cheat Master" },
+    { "id": "loot", "name": "Loot Hacker" },
+    { "id": "bounty", "name": "Bounty Hunter", "note": "Levels up only from eliminations" }
+  ],
+  "sprites": [
+    { "id": "8bit", "name": "8-Bit", "ability": "Puts an 8-Bit Shotgun in your first chest.", "where": "High, mountainous areas" },
+    { "id": "adventure", "name": "Adventure", "ability": "Upgrades a random item in your inventory each level.", "where": "High, mountainous areas" },
+    { "id": "blinky", "name": "Blinky", "ability": "Cloaks you for a short time after you take damage.", "where": "At night" },
+    { "id": "bush", "name": "Bush", "ability": "Gives you a Bush after a while. At max level, a Bush on every elimination.", "where": "All over the island" },
+    { "id": "crash", "name": "Crash Bandicoot", "ability": "Spin attack that damages nearby opponents.", "where": "High, mountainous areas" },
+    { "id": "crown", "name": "Crown", "ability": "Extra Crown Wins after a Victory Royale. Only levels up by winning.", "where": "High, mountainous areas" },
+    { "id": "jackrabbit", "name": "Jackrabbit", "ability": "Adds another jump while you're in the air.", "where": "High, mountainous areas" },
+    { "id": "jonesy", "name": "Jonesy", "ability": "Recovers some Health or Shield a moment after you're hit.", "where": "High, mountainous areas" },
+    { "id": "killswitch", "name": "Killswitch", "ability": "Hangtime with better aim when you're in the air.", "where": "At night" },
+    { "id": "klombo", "name": "Klombo", "ability": "Random items at each level.", "where": "High, mountainous areas (very rare)" },
+    { "id": "megaman", "name": "Mega Man", "ability": "Slip-and-slide movement.", "where": "High, mountainous areas", "variants": ["base"] },
+    { "id": "morgana", "name": "Morgana", "ability": "Makes healing items work better.", "where": "All over the island", "added": "2026-09-24" },
+    { "id": "onigiri", "name": "Onigiri", "ability": "Overdrive after you eat or drink.", "where": "All over the island" },
+    { "id": "overshield", "name": "Overshield", "ability": "An Overshield that gets stronger as it levels.", "where": "High, mountainous areas" },
+    { "id": "pond", "name": "Pond", "ability": "Super Jump if you jump right after landing.", "where": "All over the island" },
+    { "id": "shadow", "name": "Shadow", "ability": "Reloads your other weapons while they're put away.", "where": "High, mountainous areas" },
+    { "id": "sonic", "name": "Sonic", "ability": "Gotta go fast: sprint faster.", "where": "High, mountainous areas" },
+    { "id": "stormscout", "name": "Storm Scout", "ability": "Overdrive, and shows where the next Storm circles will be.", "where": "High areas, chests and Cheat Code consoles" },
+    { "id": "tails", "name": "Tails", "ability": "Hover with help from Tails.", "where": "High, mountainous areas" },
+    { "id": "xray", "name": "X-Ray", "ability": "Marks enemies around you every so often.", "where": "All over the island" }
+  ]
+}

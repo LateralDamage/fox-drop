@@ -28,6 +28,9 @@ class FoxViewModel(app: Application) : AndroidViewModel(app) {
     /** Bumped whenever the event list changes, so the Events screen recomposes. */
     var eventsVersion by mutableStateOf(0); private set
 
+    /** Starts from the cached copy so the checklist shows at once, even offline. */
+    var sprites by mutableStateOf(Load(fox.prefs.remoteSprites?.let { runCatching { SpriteList.parse(it) }.getOrNull() })); private set
+
     var query by mutableStateOf(""); private set
     var results by mutableStateOf(Load<List<Cosmetic>>()); private set
     private var searchJob: Job? = null
@@ -48,6 +51,12 @@ class FoxViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { game = fetch(game) { api.epicGame() } }
         viewModelScope.launch { status = fetch(status) { api.status() } }
         viewModelScope.launch { refreshEvents() }
+        viewModelScope.launch { refreshSprites() }
+    }
+
+    private suspend fun refreshSprites() {
+        sprites = Load(sprites.value, loading = true)
+        sprites = fetch(sprites) { api.spritesJson().let { prefs.remoteSprites = it; SpriteList.parse(it) } }
     }
 
     private suspend fun refreshEvents() {
@@ -72,6 +81,7 @@ class FoxViewModel(app: Application) : AndroidViewModel(app) {
             Tab.STATUS -> status = fetch(status) { api.status() }
             Tab.EVENTS -> refreshEvents()
             Tab.CHAT -> crew.start()
+            Tab.SPRITES -> refreshSprites()
         }
     }
 

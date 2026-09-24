@@ -67,6 +67,19 @@ class Prefs(context: Context) {
         get() = sp.getString("remote_events", null)
         set(v) = sp.edit().putString("remote_events", v).apply()
 
+    /** The last sprites.json that downloaded, so the Sprites tab works offline. */
+    var remoteSprites: String?
+        get() = sp.getString("remote_sprites", null)
+        set(v) = sp.edit().putString("remote_sprites", v).apply()
+
+    /** Sprites Kollin has collected, as "family:variant" keys. */
+    private val _sprites = MutableStateFlow(sp.getStringSet("sprites_got", emptySet()) ?: emptySet())
+    val spritesGot: StateFlow<Set<String>> = _sprites
+    fun toggleSprite(key: String) {
+        _sprites.value = if (key in _sprites.value) _sprites.value - key else _sprites.value + key
+        sp.edit().putStringSet("sprites_got", _sprites.value).apply()
+    }
+
     /** Official crew events from Firestore, in the events.json shape; kept for the same offline reason. */
     var cloudEvents: String?
         get() = sp.getString("cloud_events", null)

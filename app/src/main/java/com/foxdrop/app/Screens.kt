@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Newspaper
+import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -144,6 +145,7 @@ fun FoxDropApp(vm: FoxViewModel, tab: Tab, onTab: (Tab) -> Unit, onTestFox: () -
                     Triple(Tab.CHAT, "Chat", ImageVector.vectorResource(R.drawable.ic_fox_chat)),
                     Triple(Tab.STATUS, "Servers", Icons.Filled.Dns),
                     Triple(Tab.WISHLIST, "Wishlist", Icons.Filled.Favorite),
+                    Triple(Tab.SPRITES, "Sprites", Icons.Filled.Pets),
                 )
                 items.forEach { (t, label, icon) ->
                     NavigationBarItem(
@@ -161,6 +163,7 @@ fun FoxDropApp(vm: FoxViewModel, tab: Tab, onTab: (Tab) -> Unit, onTestFox: () -
             Tab.STATUS -> vm.status.loading
             Tab.EVENTS -> vm.events.loading
             Tab.CHAT -> false
+            Tab.SPRITES -> vm.sprites.loading
         }
         PullToRefreshBox(isRefreshing = loading, onRefresh = { vm.refresh(tab) }, modifier = Modifier.padding(pad).consumeWindowInsets(pad).fillMaxSize()) {
             when (tab) {
@@ -171,6 +174,7 @@ fun FoxDropApp(vm: FoxViewModel, tab: Tab, onTab: (Tab) -> Unit, onTestFox: () -
                 Tab.EVENTS -> EventsScreen(vm)
                 Tab.CHAT -> ChatScreen(vm)
                 Tab.WISHLIST -> WishlistScreen(vm, onTab)
+                Tab.SPRITES -> SpritesScreen(vm)
             }
         }
     }
