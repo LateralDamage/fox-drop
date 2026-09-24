@@ -32,7 +32,14 @@ class FoxViewModel(app: Application) : AndroidViewModel(app) {
     var results by mutableStateOf(Load<List<Cosmetic>>()); private set
     private var searchJob: Job? = null
 
-    init { refreshAll() }
+    val crew = CrewModel(viewModelScope, prefs, onEvents = { eventsChanged() })
+
+    init {
+        refreshAll()
+        crew.start()
+    }
+
+    override fun onCleared() = crew.close()
 
     fun refreshAll() {
         viewModelScope.launch { shop = fetch(shop) { api.shop() } }
@@ -64,6 +71,7 @@ class FoxViewModel(app: Application) : AndroidViewModel(app) {
             Tab.NEWS -> { news = fetch(news) { api.news() }; game = fetch(game) { api.epicGame() } }
             Tab.STATUS -> status = fetch(status) { api.status() }
             Tab.EVENTS -> refreshEvents()
+            Tab.CHAT -> crew.start()
         }
     }
 

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -72,6 +73,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -137,6 +140,7 @@ fun FoxDropApp(vm: FoxViewModel, tab: Tab, onTab: (Tab) -> Unit, onTestFox: () -
                     Triple(Tab.NEW, "New", Icons.Filled.AutoAwesome),
                     Triple(Tab.NEWS, "News", Icons.Filled.Newspaper),
                     Triple(Tab.EVENTS, "Events", Icons.Filled.Celebration),
+                    Triple(Tab.CHAT, "Chat", ImageVector.vectorResource(R.drawable.ic_fox_chat)),
                     Triple(Tab.STATUS, "Servers", Icons.Filled.Dns),
                     Triple(Tab.WISHLIST, "Wishlist", Icons.Filled.Favorite),
                 )
@@ -155,14 +159,16 @@ fun FoxDropApp(vm: FoxViewModel, tab: Tab, onTab: (Tab) -> Unit, onTestFox: () -
             Tab.NEWS -> vm.news.loading || vm.game.loading
             Tab.STATUS -> vm.status.loading
             Tab.EVENTS -> vm.events.loading
+            Tab.CHAT -> false
         }
-        PullToRefreshBox(isRefreshing = loading, onRefresh = { vm.refresh(tab) }, modifier = Modifier.padding(pad).fillMaxSize()) {
+        PullToRefreshBox(isRefreshing = loading, onRefresh = { vm.refresh(tab) }, modifier = Modifier.padding(pad).consumeWindowInsets(pad).fillMaxSize()) {
             when (tab) {
                 Tab.SHOP -> ShopScreen(vm, onTab)
                 Tab.NEW -> NewScreen(vm)
                 Tab.NEWS -> NewsScreen(vm)
                 Tab.STATUS -> StatusScreen(vm)
                 Tab.EVENTS -> EventsScreen(vm)
+                Tab.CHAT -> ChatScreen(vm)
                 Tab.WISHLIST -> WishlistScreen(vm, onTab)
             }
         }

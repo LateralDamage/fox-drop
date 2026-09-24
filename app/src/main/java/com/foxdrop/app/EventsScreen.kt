@@ -31,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -106,14 +107,22 @@ fun EventsScreen(vm: FoxViewModel) {
             }
         }
 
+        val admin = vm.crew.me?.admin == true
+        fun removable(e: LiveEvent) = e.custom || (admin && e.id.startsWith(Crew.CREW_PREFIX))
+        fun remove(e: LiveEvent) = if (e.custom) vm.removeEvent(e.id) else vm.crew.removeOfficial(e.id)
+
         val rest = events.drop(1)
         if (rest.isNotEmpty()) {
             item { Header("Coming up") }
-            items(rest, key = { it.id }) { e -> EventRow(e, now, onDelete = { vm.removeEvent(e.id) }) }
+            items(rest, key = { it.id }) { e -> EventRow(e, now, canDelete = removable(e), onDelete = { remove(e) }) }
         }
-        if (next != null && next.custom) item {
-            TextButton(onClick = { vm.removeEvent(next.id) }) { Text("Remove \"${next.title}\"") }
+        if (next != null && removable(next)) item {
+            TextButton(onClick = { remove(next) }) {
+                Text(if (next.custom) "Remove \"${next.title}\"" else "Remove \"${next.title}\" for everyone")
+            }
         }
+
+        if (vm.crew.active) item { TipsSection(vm) }
 
         item {
             Button(
@@ -132,7 +141,39 @@ fun EventsScreen(vm: FoxViewModel) {
             )
         }
     }
-    if (adding) AddEventDialog(onAdd = { vm.addEvent(it); adding = false }, onClose = { adding = false })
+    if (adding) {
+        val me = vm.crew.me
+        val canShare = vm.crew.active && me?.canPost == true
+        val admin = me?.admin == true
+        var share by remember { mutableStateOf(canShare) }
+        EventDialog(
+            heading = "Add a live event",
+            confirm = { if (!share) "Add" else if (admin) "Publish" else "Send tip" },
+            onDone = { e ->
+                when {
+                    !share -> vm.addEvent(e)
+                    admin -> vm.crew.publish(e)
+                    else -> vm.crew.postTip(e)
+                }
+                adding = false
+            },
+            onClose = { adding = false },
+            extra = {
+                if (canShare) Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(if (admin) "Publish for everyone" else "Share with the crew", fontWeight = FontWeight.Bold)
+                        Text(
+                            if (admin) "Every Fox Drop phone gets the countdown and reminders."
+                            else if (share) "The admin checks tips before they go on everyone's calendar."
+                            else "Only on this phone.",
+                            fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f),
+                        )
+                    }
+                    Switch(share, { share = it })
+                }
+            },
+        )
+    }
 }
 
 @Composable
@@ -180,7 +221,7 @@ private fun NoEventCard() = Card(colors = CardDefaults.cardColors(containerColor
 }
 
 @Composable
-private fun EventRow(e: LiveEvent, now: Instant, onDelete: () -> Unit) {
+private fun EventRow(e: LiveEvent, now: Instant, canDelete: Boolean, onDelete: () -> Unit) {
     Card(colors = CardDefaults.cardColors(containerColor = Panel)) {
         Row(Modifier.padding(start = 14.dp, top = 10.dp, bottom = 10.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -193,7 +234,7 @@ private fun EventRow(e: LiveEvent, now: Instant, onDelete: () -> Unit) {
                 if (e.approx) "~${d.toDays()}d" else if (d.toDays() > 0) "${d.toDays()}d" else countdown(d),
                 fontWeight = FontWeight.Black, color = FoxOrange,
             )
-            if (e.custom) IconButton(onClick = onDelete) { Icon(Icons.Filled.Delete, "Remove") }
+            if (canDelete) IconButton(onClick = onDelete) { Icon(Icons.Filled.Delete, "Remove") }
         }
     }
 }
@@ -223,21 +264,35 @@ fun NextEventStrip(vm: FoxViewModel, onOpen: () -> Unit) {
     }
 }
 
+/**
+ * Add (or, for the admin, approve) an event. Leaving the time empty makes it a day-only event, for when
+ * Epic has named the day but not the hour. [extra] sits under the fields, e.g. the share-with-crew switch.
+ */
 @Composable
-private fun AddEventDialog(onAdd: (LiveEvent) -> Unit, onClose: () -> Unit) {
+fun EventDialog(
+    heading: String, confirm: (LiveEvent?) -> String, onDone: (LiveEvent) -> Unit, onClose: () -> Unit,
+    initial: LiveEvent? = null, extra: (@Composable () -> Unit)? = null,
+) {
     val context = LocalContext.current
-    var title by remember { mutableStateOf("") }
-    var day by remember { mutableStateOf(LocalDate.now()) }
-    var time by remember { mutableStateOf<LocalTime?>(null) }
-    val start = time?.let { day.atTime(it).atZone(ZoneId.systemDefault()).toInstant() }
+    val zone = ZoneId.systemDefault()
+    var title by remember { mutableStateOf(initial?.title.orEmpty()) }
+    var note by remember { mutableStateOf(initial?.note.orEmpty()) }
+    var day by remember { mutableStateOf(initial?.start?.atZone(zone)?.toLocalDate()?.takeIf { !it.isBefore(LocalDate.now()) } ?: LocalDate.now()) }
+    var time by remember { mutableStateOf(initial?.takeIf { !it.approx }?.start?.atZone(zone)?.toLocalTime()) }
+    val start = time?.let { day.atTime(it).atZone(zone).toInstant() }
     val inPast = start != null && start < Instant.now()
+    val event = if (title.isBlank() || inPast) null else LiveEvent(
+        id = initial?.id ?: "my-${System.currentTimeMillis()}", title = title.trim(),
+        start = start ?: day.atStartOfDay(zone).toInstant(), approx = start == null,
+        note = note.trim(), link = null, custom = initial == null,
+    )
     AlertDialog(
         onDismissRequest = onClose,
         containerColor = Panel,
-        title = { Text("Add a live event", fontWeight = FontWeight.Black) },
+        title = { Text(heading, fontWeight = FontWeight.Black) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedTextField(title, { title = it }, singleLine = true, placeholder = { Text("What's the event?") })
+                OutlinedTextField(title, { title = it.take(80) }, singleLine = true, placeholder = { Text("What's the event?") })
                 OutlinedButton(onClick = {
                     DatePickerDialog(context, { _, y, m, d -> day = LocalDate.of(y, m + 1, d) }, day.year, day.monthValue - 1, day.dayOfMonth)
                         .apply { datePicker.minDate = System.currentTimeMillis() - 1000 }.show()
@@ -246,17 +301,18 @@ private fun AddEventDialog(onAdd: (LiveEvent) -> Unit, onClose: () -> Unit) {
                     val t = time ?: LocalTime.of(14, 0)
                     TimePickerDialog(context, { _, h, min -> time = LocalTime.of(h, min) }, t.hour, t.minute, false).show()
                 }, modifier = Modifier.fillMaxWidth()) {
-                    Text(time?.let { "⏰  " + DateTimeFormatter.ofPattern("h:mm a").format(it) } ?: "⏰  Pick a time")
+                    Text(time?.let { "⏰  " + DateTimeFormatter.ofPattern("h:mm a").format(it) } ?: "⏰  Pick a time (if you know it)")
                 }
+                if (time != null) TextButton(onClick = { time = null }) { Text("Time not announced yet", fontSize = 12.sp) }
+                OutlinedTextField(note, { note = it.take(300) }, maxLines = 3, placeholder = { Text("Where did you hear it? (optional)") })
                 if (inPast) Text("That time already passed.", color = Color(0xFFFFB4A8), fontSize = 13.sp)
                 Text("Times are your phone's time zone. Tip: Epic usually says Eastern time (ET).",
                     fontSize = 12.sp, color = Color.White.copy(alpha = 0.6f))
+                extra?.invoke()
             }
         },
         confirmButton = {
-            TextButton(enabled = title.isNotBlank() && start != null && !inPast, onClick = {
-                onAdd(LiveEvent("my-${System.currentTimeMillis()}", title.trim(), start!!, false, "", null, custom = true))
-            }) { Text("Add") }
+            TextButton(enabled = event != null, onClick = { onDone(event!!) }) { Text(confirm(event)) }
         },
         dismissButton = { TextButton(onClick = onClose) { Text("Cancel") } },
     )

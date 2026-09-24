@@ -10,6 +10,9 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.Query
+import kotlinx.coroutines.tasks.await
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
@@ -57,8 +60,62 @@ class Watcher(private val context: Context, private val api: Api, private val pr
         runCatching { checkCosmetics() }
         runCatching { checkNews() }
         runCatching { checkStatus() }
+        runCatching { if (Crew.configured) { Crew.signIn(); prefs.cloudEvents = Crew.fetchEvents() } }
         runCatching { checkEvents() }
+        runCatching { checkChat() }
+        runCatching { checkTips() }
+        runCatching { checkReports() }
         prefs.lastCheck = System.currentTimeMillis()
+    }
+
+    /** New messages from others since the last one seen; skipped while the app is on screen. */
+    private suspend fun checkChat() {
+        if (!Crew.configured || !prefs.crewActive || FoxApp.visible) return
+        val me = Crew.signIn()
+        val since = prefs.chatSeenAt
+        if (since == 0L) { prefs.chatSeenAt = System.currentTimeMillis(); return }
+        val docs = Crew.db.collection("chat")
+            .whereGreaterThan("at", Timestamp(java.time.Instant.ofEpochMilli(since)))
+            .orderBy("at").limit(30).get().await().documents
+        docs.lastOrNull()?.getTimestamp("at")?.let { prefs.chatSeenAt = it.toInstant().toEpochMilli() }
+        val blocked = prefs.blocked.value
+        val posts = docs.mapNotNull(::postOf).filter { it.uid != me && it.uid !in blocked }
+        if (posts.isEmpty()) return
+        alert(
+            AlertKind.CHAT, Tab.CHAT,
+            if (posts.size == 1) "💬 ${posts[0].name}" else "💬 ${posts.size} new messages",
+            posts.takeLast(4).joinToString("\n") { if (posts.size == 1) it.text else "${it.name}: ${it.text}" },
+            id = 6001,
+        )
+    }
+
+    private suspend fun checkTips() {
+        if (!Crew.configured || !prefs.crewActive) return
+        val me = Crew.signIn()
+        val pending = Crew.db.collection("tips").orderBy("at", Query.Direction.DESCENDING).limit(30).get().await()
+            .documents.mapNotNull(::tipOf).filter { it.status == "pending" }
+        val before = prefs.seenSet("tips")
+        prefs.setSeenSet("tips", pending.map { it.id }.toSet())
+        if (before == null) return
+        pending.filter { it.id !in before && it.uid != me }.forEach {
+            alert(
+                AlertKind.CHAT, Tab.EVENTS, "💡 Event tip: ${it.title}",
+                "From ${it.name}." + if (prefs.crewAdmin) " Tap to approve it or delete it." else " Tap to comment.",
+                id = ("tip" + it.id).hashCode(),
+            )
+        }
+    }
+
+    /** Admin only: someone flagged a message. */
+    private suspend fun checkReports() {
+        if (!Crew.configured || !prefs.crewAdmin) return
+        Crew.signIn()
+        val ids = Crew.db.collection("reports").get().await().documents.map { it.id }.toSet()
+        val before = prefs.seenSet("reports")
+        prefs.setSeenSet("reports", ids)
+        if (before != null && (ids - before).isNotEmpty()) {
+            alert(AlertKind.CHAT, Tab.CHAT, "🚩 ${(ids - before).size} new report(s) in chat", "Open Admin in the Chat tab to review.", id = 6002)
+        }
     }
 
     private suspend fun checkShop() {
@@ -144,7 +201,7 @@ class Watcher(private val context: Context, private val api: Api, private val pr
     private suspend fun checkEvents() {
         val json = api.eventsJson()
         prefs.remoteEvents = json
-        val events = LiveEvent.parseList(json, custom = false).filter { !it.isOver() }
+        val events = hostedEvents(prefs).filter { !it.isOver() }
         // Keyed by id and time, so a moved event counts as news too.
         val sigs = events.associateBy { "${it.id}@${it.start}" }
         val before = prefs.seenSet("events")

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fox Drop</title>
+  <meta name="description" content="Fortnite Item Shop, news, live-event countdowns and Fox Chat for the Fox Drop crew.">
+  <meta name="theme-color" content="#120B2E">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon-192.png">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="top">
+    <img src="../icon.svg" alt="" class="logo">
+    <h1>Fox Drop</h1>
+    <span class="spacer"></span>
+    <button class="icon-btn" id="refresh" title="Refresh">&#x21bb;</button>
+    <button class="icon-btn" id="settings" title="Settings">&#x2699;</button>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="shop"><span class="ico">&#x1F6CD;</span><span>Shop</span></button>
+    <button data-tab="new"><span class="ico">&#x2728;</span><span>New</span></button>
+    <button data-tab="news"><span class="ico">&#x1F4F0;</span><span>News</span></button>
+    <button data-tab="events"><span class="ico">&#x1F389;</span><span>Events</span></button>
+    <button data-tab="chat"><img class="ico fox-chat" src="fox-chat.svg" alt=""><span>Chat</span></button>
+    <button data-tab="servers"><span class="ico">&#x1F5A5;</span><span>Servers</span></button>
+    <button data-tab="wishlist"><span class="ico">&#x2665;</span><span>Wishlist</span></button>
+  </nav>
+
+  <main id="main" tabindex="-1"></main>
+
+  <dialog id="dialog"></dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <noscript>Fox Drop needs JavaScript turned on.</noscript>
+</body>
+</html>

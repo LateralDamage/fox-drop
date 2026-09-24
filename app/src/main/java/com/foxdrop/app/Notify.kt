@@ -11,7 +11,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 
-enum class Tab { SHOP, NEW, NEWS, EVENTS, STATUS, WISHLIST }
+enum class Tab { SHOP, NEW, NEWS, EVENTS, CHAT, STATUS, WISHLIST }
 
 object Notify {
     const val EXTRA_TAB = "tab"
@@ -25,6 +25,7 @@ object Notify {
         AlertKind.NEWS to NotificationManager.IMPORTANCE_DEFAULT,
         AlertKind.COSMETICS to NotificationManager.IMPORTANCE_DEFAULT,
         AlertKind.EVENTS to NotificationManager.IMPORTANCE_HIGH,
+        AlertKind.CHAT to NotificationManager.IMPORTANCE_DEFAULT,
     )
 
     fun createChannels(context: Context) {

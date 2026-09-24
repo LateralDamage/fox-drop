@@ -26,11 +26,14 @@ class FoxApp : Application(), SingletonImageLoader.Factory {
     companion object {
         /** When the app last left the screen; 0 in a fresh process. MainActivity uses it to replay the fox. */
         var leftAt = 0L
+        /** True while Fox Drop is on screen; the watcher skips chat alerts then. */
+        @Volatile var visible = false
     }
 
     override fun onCreate() {
         super.onCreate()
         Notify.createChannels(this)
+        Crew.init(this)
         WatchWorker.schedule(this)
         EventAlarms.reschedule(this)
     }

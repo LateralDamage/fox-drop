@@ -15,6 +15,7 @@ enum class AlertKind(val key: String, val title: String, val blurb: String) {
     NEWS("news", "News", "New in-game news posts and Epic notices"),
     COSMETICS("cosmetics", "New cosmetics", "When new skins, emotes and more are added to the game files"),
     EVENTS("events", "Live events", "A day, an hour and 10 minutes before a live event, when it goes live, and when a new one is announced"),
+    CHAT("chat", "Fox Chat & tips", "New Fox Chat messages and event tips from your crew"),
 }
 
 class Prefs(context: Context) {
@@ -59,6 +60,32 @@ class Prefs(context: Context) {
     var remoteEvents: String?
         get() = sp.getString("remote_events", null)
         set(v) = sp.edit().putString("remote_events", v).apply()
+
+    /** Official crew events from Firestore, in the events.json shape; kept for the same offline reason. */
+    var cloudEvents: String?
+        get() = sp.getString("cloud_events", null)
+        set(v) = sp.edit().putString("cloud_events", v).apply()
+
+    /** Set by the chat screen's state so the background watcher knows whether to look at chat and tips. */
+    var crewActive: Boolean
+        get() = sp.getBoolean("crew_active", false)
+        set(v) = sp.edit().putBoolean("crew_active", v).apply()
+    var crewAdmin: Boolean
+        get() = sp.getBoolean("crew_admin", false)
+        set(v) = sp.edit().putBoolean("crew_admin", v).apply()
+
+    /** Server time of the newest chat message already seen, so the watcher only alerts on newer ones. */
+    var chatSeenAt: Long
+        get() = sp.getLong("chat_seen_at", 0)
+        set(v) = sp.edit().putLong("chat_seen_at", v).apply()
+
+    /** People this phone chose to hide in chat. Local only; reporting is what reaches the admin. */
+    private val _blocked = MutableStateFlow(sp.getStringSet("blocked", emptySet()) ?: emptySet())
+    val blocked: StateFlow<Set<String>> = _blocked
+    fun block(uid: String) {
+        _blocked.value = _blocked.value + uid
+        sp.edit().putStringSet("blocked", _blocked.value).apply()
+    }
 
     /** Request codes of the alarms currently set, so the next reschedule can cancel them. */
     var alarmCodes: Set<String>

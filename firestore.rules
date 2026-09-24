@@ -1,0 +1,112 @@
+rules_version = '2';
+
+// Fox Drop crew chat and event tips. Paste into Firebase console -> Firestore -> Rules.
+//
+// Everyone signs in anonymously, so every phone has a uid. Beyond that:
+//  - config/invite {code}   the invite code. Only admins can read or change it.
+//  - config/admin  {code}   the admin code, set once in the console. Nobody can read it from the app.
+//  - admins/{uid}           a phone that typed the admin code. Created by the app, checked here.
+//  - members/{uid}          a phone that typed the invite code. Stores the code it joined with, so
+//                           changing the invite code locks everyone out until they type the new one.
+//  - chat, tips, tips/*/comments, reports   members only
+//  - events                 official events: everyone reads, admins write
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    function isAdmin() { return signedIn() && exists(/databases/$(db)/documents/admins/$(me())); }
+    function inviteCode() { return get(/databases/$(db)/documents/config/invite).data.code; }
+    function member() { return get(/databases/$(db)/documents/members/$(me())).data; }
+    function isMember() {
+      return isAdmin() || (signedIn()
+        && exists(/databases/$(db)/documents/members/$(me()))
+        && member().code == inviteCode()
+        && member().banned != true);
+    }
+    function canPost() { return isAdmin() || (isMember() && member().muted != true); }
+    function goodName(n) { return n is string && n.size() >= 1 && n.size() <= 20; }
+    function goodText(t, most) { return t is string && t.size() >= 1 && t.size() <= most; }
+    function joined() { return exists(/databases/$(db)/documents/members/$(me())); }
+    // A post carries its author's uid and current name, stamped with the server clock.
+    // An admin who never joined posts under the name on their admins doc.
+    function authored(d) {
+      return d.uid == me() && d.at == request.time
+        && ((joined() && d.name == member().name)
+            || (!joined() && isAdmin() && d.name == get(/databases/$(db)/documents/admins/$(me())).data.name));
+    }
+
+    match /config/invite {
+      allow read, write: if isAdmin();
+    }
+    match /config/{other} {
+      allow read, write: if false;
+    }
+
+    match /admins/{uid} {
+      allow read: if signedIn() && uid == me();
+      allow create: if signedIn() && uid == me()
+        && request.resource.data.code == get(/databases/$(db)/documents/config/admin).data.code
+        && goodName(request.resource.data.name)
+        && request.resource.data.keys().hasOnly(['code', 'name']);
+      allow update: if signedIn() && uid == me()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
+        && goodName(request.resource.data.name);
+    }
+
+    match /members/{uid} {
+      allow read: if (signedIn() && uid == me()) || isAdmin();
+      // Joining: the right code, and a new member always starts unmuted and unbanned.
+      allow create: if signedIn() && uid == me()
+        && request.resource.data.code == inviteCode()
+        && goodName(request.resource.data.name)
+        && request.resource.data.muted == false
+        && request.resource.data.banned == false
+        && request.resource.data.keys().hasOnly(['code', 'name', 'muted', 'banned', 'joined']);
+      // Rejoining after a code change, or a rename. Mute and ban can only be changed by an admin.
+      allow update: if isAdmin() || (signedIn() && uid == me()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['code', 'name'])
+        && request.resource.data.code == inviteCode()
+        && goodName(request.resource.data.name));
+      allow delete: if isAdmin();
+    }
+
+    match /chat/{id} {
+      allow read: if isMember();
+      allow create: if canPost() && authored(request.resource.data)
+        && goodText(request.resource.data.text, 500)
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'text', 'at']);
+      allow delete: if isAdmin();
+    }
+
+    match /tips/{id} {
+      allow read: if isMember();
+      allow create: if canPost() && authored(request.resource.data)
+        && goodText(request.resource.data.title, 80)
+        && request.resource.data.note is string && request.resource.data.note.size() <= 300
+        && request.resource.data.status == 'pending'
+        && request.resource.data.keys().hasOnly(['uid', 'name', 'title', 'note', 'start', 'date', 'at', 'status']);
+      allow update: if isAdmin();
+      allow delete: if isAdmin() || (isMember() && resource.data.uid == me());
+
+      match /comments/{cid} {
+        allow read: if isMember();
+        allow create: if canPost() && authored(request.resource.data)
+          && goodText(request.resource.data.text, 300)
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'text', 'at']);
+        allow delete: if isAdmin();
+      }
+    }
+
+    match /reports/{id} {
+      allow create: if isMember() && request.resource.data.by == me()
+        && request.resource.data.keys().hasOnly(['by', 'path', 'uid', 'name', 'text', 'at']);
+      allow read, delete: if isAdmin();
+    }
+
+    match /events/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

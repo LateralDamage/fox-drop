@@ -69,12 +69,14 @@ class MainActivity : ComponentActivity() {
      */
     override fun onStart() {
         super.onStart()
+        FoxApp.visible = true
         val left = FoxApp.leftAt
         if (left == 0L || System.currentTimeMillis() - left > 3000) foxRun = true
     }
 
     override fun onStop() {
         super.onStop()
+        FoxApp.visible = false
         FoxApp.leftAt = System.currentTimeMillis()
     }
 

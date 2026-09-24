@@ -13,12 +13,21 @@ android {
         applicationId = "com.foxdrop.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.3"
+        versionCode = 6
+        versionName = "1.4.1"
+
+        // Chat and crew tips run on Firebase. These three values are public identifiers, not secrets
+        // (the Firestore rules do the guarding). They live in firebase.properties; without it chat stays hidden.
+        val fb = Properties().apply {
+            rootProject.file("firebase.properties").takeIf { it.exists() }?.inputStream()?.use(::load)
+        }
+        buildConfigField("String", "FIREBASE_API_KEY", "\"${fb.getProperty("apiKey", "")}\"")
+        buildConfigField("String", "FIREBASE_APP_ID", "\"${fb.getProperty("appId", "")}\"")
+        buildConfigField("String", "FIREBASE_PROJECT_ID", "\"${fb.getProperty("projectId", "")}\"")
     }
 
     // The Play upload key lives outside the repo; without it the "play" build simply isn't signed.
-    val keyFile = rootProject.file(providers.gradleProperty("foxdropKeys").getOrElse("C:/Users/densonjr/foxdrop-keys/keystore.properties"))
+    val keyFile = rootProject.file(providers.gradleProperty("foxdropKeys").getOrElse("C:/Users/james/foxdrop-keys/keystore.properties"))
     val playKey = if (keyFile.exists()) Properties().apply { keyFile.inputStream().use(::load) } else null
     signingConfigs {
         if (playKey != null) create("upload") {
@@ -50,7 +59,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    buildFeatures { compose = true }
+    buildFeatures { compose = true; buildConfig = true }
 }
 
 dependencies {
@@ -68,6 +77,11 @@ dependencies {
     implementation(libs.coil.network)
     implementation(libs.okhttp)
     implementation(libs.work.runtime)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.coroutines.play.services)
 }
 
 // The Play Console entry was created as foxdrop.myapp, and Play never lets that change. Only the Play

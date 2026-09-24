@@ -70,9 +70,13 @@ data class LiveEvent(
     }
 }
 
+/** The official lists: events.json plus events the crew admin published. */
+fun hostedEvents(prefs: Prefs): List<LiveEvent> =
+    LiveEvent.parseList(prefs.remoteEvents, custom = false) + LiveEvent.parseList(prefs.cloudEvents, custom = false)
+
 /** Every event the phone knows about, hosted and home-made, soonest first, finished ones dropped. */
 fun allEvents(prefs: Prefs, now: Instant = Instant.now()): List<LiveEvent> =
-    (LiveEvent.parseList(prefs.remoteEvents, custom = false) + prefs.myEvents.value)
+    (hostedEvents(prefs) + prefs.myEvents.value)
         .filter { !it.isOver(now) }
         .distinctBy { it.id }
         .sortedBy { it.start }
