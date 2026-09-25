@@ -5,7 +5,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/fireba
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
 import {
   getFirestore, collection, doc, getDoc, onSnapshot, query, orderBy, limit, addDoc, setDoc, updateDoc, deleteDoc,
-  serverTimestamp, writeBatch, Timestamp,
+  serverTimestamp, writeBatch, Timestamp, arrayUnion, arrayRemove,
 } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
 
 // Public identifiers, not secrets: firestore.rules does the guarding.
@@ -191,6 +191,7 @@ function toggleWish(w) {
   const i = state.wishes.findIndex((x) => x.id === w.id);
   if (i >= 0) state.wishes.splice(i, 1); else state.wishes.unshift(w);
   save('wishes', state.wishes);
+  pushProfile();
   render();
 }
 
@@ -248,6 +249,7 @@ async function loadSprites() {
 function toggleSprite(key) {
   if (state.spritesGot.has(key)) state.spritesGot.delete(key); else state.spritesGot.add(key);
   save('spritesGot', [...state.spritesGot]);
+  pushProfile();
   render();
 }
 
@@ -266,6 +268,7 @@ function startCrew() {
     if (!user) { signInAnonymously(auth).catch(() => { crew.signInError = "Couldn't reach the chat server. Check your internet and try again."; render(); }); return; }
     if (crew.uid === user.uid) return;
     crew.uid = user.uid;
+    listenProfile();
     // Only server-confirmed copies count; see the matching comment in Crew.kt.
     onSnapshot(doc(db, 'admins', user.uid), { includeMetadataChanges: true }, (s) => { if (!s.metadata.hasPendingWrites) { crew.adminDoc = s; updateMe(); } });
     onSnapshot(doc(db, 'members', user.uid), { includeMetadataChanges: true }, (s) => { if (!s.metadata.hasPendingWrites) { crew.memberDoc = s; updateMe(); } });
@@ -966,6 +969,115 @@ function claimAdminDialog() {
   };
 }
 
+// ---------- linking with the phone (the computer's half of Sync.kt) ----------
+// The computer shows a QR code for a one-time links/{code} doc (5 minutes). The phone scans it, the player
+// taps Link there, and the phone writes its uid into the link; this side then adds it to the profile.
+
+const link = { profileId: store('profileId', null), unsub: null, others: 0, last: null };
+
+function profileFields() {
+  return { wishes: state.wishes.map((w) => ({ id: w.id, name: w.name || '', type: w.type || '', image: w.image || '' })), sprites: [...state.spritesGot].sort(), at: serverTimestamp() };
+}
+
+function pushProfile() {
+  if (!link.profileId) return;
+  const f = profileFields();
+  const sig = JSON.stringify([f.wishes, f.sprites]);
+  if (sig === link.last) return;   // this is the copy that just arrived from the phone
+  link.last = sig;
+  setDoc(doc(db, 'profiles', link.profileId), f, { merge: true }).catch(() => {});
+}
+
+function listenProfile() {
+  link.unsub?.();
+  if (!link.profileId || !crew.uid) return;
+  link.unsub = onSnapshot(doc(db, 'profiles', link.profileId), (s) => {
+    if (s.metadata.hasPendingWrites) return;
+    const d = s.data();
+    if (!d || !(d.members || []).includes(crew.uid)) { forgetProfile(); return; }
+    link.others = Math.max(0, d.members.length - 1);
+    const wishes = (d.wishes || []).map((w) => ({ id: w.id, name: w.name, type: w.type, image: w.image || null }));
+    const sprites = d.sprites || [];
+    link.last = JSON.stringify([wishes.map((w) => ({ ...w, image: w.image || '' })), [...sprites].sort()]);
+    state.wishes = wishes; save('wishes', wishes);
+    state.spritesGot = new Set(sprites); save('spritesGot', sprites);
+    render(); refreshOpenDialog();
+  }, () => forgetProfile());
+}
+
+function forgetProfile() {
+  link.unsub?.(); link.unsub = null; link.profileId = null; link.others = 0; save('profileId', null);
+  refreshOpenDialog();
+}
+
+/** 32 characters from an alphabet without look-alikes, from the browser's secure random source. */
+function newLinkCode() {
+  const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  return [...crypto.getRandomValues(new Uint8Array(32))].map((b) => abc[b % abc.length]).join('');
+}
+
+async function linkPhoneDialog() {
+  if (!crew.uid) { toast('Still connecting. Try again in a moment.'); return; }
+  let status = 'Making a code…', qr = '', unsubLink = null, code = null, timer = null, expires = 0;
+  const cleanup = () => { unsubLink?.(); clearInterval(timer); if (code && status !== 'done') deleteDoc(doc(db, 'links', code)).catch(() => {}); };
+  const view = () => `<h3>📱 Link your phone</h3>
+    ${status === 'done' ? `<p><b>Linked! ✓</b></p><p class="faint">Your wishlist, Sprite checklist and Fortnite name now stay the same on the phone and here.</p>`
+      : `<p class="faint small" style="margin-top:-6px">On the phone: Fox Drop → ⚙ → <b>Scan QR code</b>, then tap <b>Link</b>. The code works once, for 5 minutes.</p>
+      <div class="qr-box">${qr || '<div class="spinner"></div>'}</div>
+      <p class="faint small" style="text-align:center">${esc(status)}</p>`}
+    <div class="actions">${status === 'expired' ? '<button class="btn ghost" data-act="again">New code</button>' : ''}<button class="btn" data-act="close">${status === 'done' ? 'Done' : 'Cancel'}</button></div>`;
+  openDialog(view);
+  dialog.onclick = (ev) => {
+    const a = ev.target.closest('[data-act]')?.dataset.act;
+    if (a === 'again') { cleanup(); linkPhoneDialog(); }
+    if (a === 'close') { cleanup(); dialog.onclick = null; closeDialog(); }
+  };
+  dialog.addEventListener('close', cleanup, { once: true });
+  try {
+    if (!link.profileId) {
+      const ref = doc(collection(db, 'profiles'));
+      await setDoc(ref, { members: [crew.uid] });
+      await setDoc(ref, profileFields(), { merge: true });
+      link.profileId = ref.id; save('profileId', ref.id); listenProfile();
+    }
+    code = newLinkCode();
+    expires = Date.now() + 5 * 60 * 1000;
+    await setDoc(doc(db, 'links', code), { web: crew.uid, profile: link.profileId, exp: Timestamp.fromMillis(expires) });
+    const q = qrcode(0, 'M');
+    q.addData(new URL('../link/#' + code, location.href).href);
+    q.make();
+    qr = q.createSvgTag({ cellSize: 6, margin: 3, scalable: true });
+    const tickStatus = () => {
+      const left = Math.max(0, Math.round((expires - Date.now()) / 1000));
+      if (status === 'done') return;
+      status = left ? `Waiting for the phone… ${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}` : 'expired';
+      if (!left) { clearInterval(timer); qr = '<p class="faint">This code expired.</p>'; }
+      refreshOpenDialog();
+    };
+    tickStatus();
+    timer = setInterval(tickStatus, 1000);
+    unsubLink = onSnapshot(doc(db, 'links', code), async (s) => {
+      const phone = s.data()?.phone;
+      if (!phone) return;
+      unsubLink?.(); unsubLink = null;
+      await updateDoc(doc(db, 'profiles', link.profileId), { members: arrayUnion(phone) });
+      await deleteDoc(doc(db, 'links', code)).catch(() => {});
+      status = 'done'; clearInterval(timer);
+      refreshOpenDialog();
+    });
+  } catch {
+    status = "Couldn't make a code. Check your internet and try again.";
+    refreshOpenDialog();
+  }
+}
+
+async function unlinkPhone() {
+  if (!link.profileId) return;
+  await updateDoc(doc(db, 'profiles', link.profileId), { members: arrayRemove(crew.uid) }).catch(() => {});
+  forgetProfile();
+  toast('Unlinked');
+}
+
 function settingsDialog() {
   const perm = 'Notification' in window ? Notification.permission : 'unsupported';
   openDialog(() => `<h3>Settings</h3>
@@ -973,6 +1085,10 @@ function settingsDialog() {
       <span class="faint small">Wishlist items in the shop, Fox Chat messages, and live-event reminders, while Fox Drop is open.</span></span></label>
     ${perm === 'default' ? '<button class="btn ghost" data-act="perm" style="margin-top:10px">Allow notifications</button>' : ''}
     ${perm === 'denied' ? '<p class="problem small">Notifications are blocked for this site. Turn them on in the browser\'s site settings.</p>' : ''}
+    <div style="margin-top:14px"><b>📱 Your phone</b><br>
+      ${link.profileId ? `<span class="faint small">${link.others ? 'Linked: your wishlist, Sprites and Fortnite name stay the same on both.' : 'Not linked to a phone yet.'}</span>` : '<span class="faint small">Link Fox Drop on your phone to share your wishlist, Sprite checklist and Fortnite name.</span>'}<br>
+      <button class="btn ghost" data-act="link" style="margin-top:8px">${link.others ? 'Link another phone' : 'Link your phone'}</button>
+      ${link.others ? '<button class="btn text" data-act="unlink">Unlink</button>' : ''}</div>
     <p class="faint small" style="margin-top:14px">To keep Fox Drop in the taskbar: in Edge or Chrome, open the ⋯ menu and choose <b>Install Fox Drop</b> (or Apps → Install).</p>
     <p class="faint small">Fox Drop is an unofficial fan app, not made or endorsed by Epic Games. Fortnite is a trademark of Epic Games, Inc.
       <a href="../privacy.html" target="_blank" rel="noopener">Privacy policy</a></p>
@@ -980,6 +1096,8 @@ function settingsDialog() {
   dialog.onclick = async (ev) => {
     const a = ev.target.closest('[data-act]')?.dataset.act;
     if (a === 'perm') { await Notification.requestPermission(); settingsDialog(); }
+    if (a === 'link') { dialog.onclick = null; linkPhoneDialog(); return; }
+    if (a === 'unlink') { await unlinkPhone(); settingsDialog(); }
     if (a === 'close') { dialog.onclick = null; closeDialog(); }
   };
   dialog.onchange = (ev) => { if (ev.target.id === 'alerts-on') save('alerts', ev.target.checked); };

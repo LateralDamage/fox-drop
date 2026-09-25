@@ -27,12 +27,13 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- Fox Chat invite links: the join page hands the code over as foxdrop://join?code=... -->
+            <!-- Fox Chat invites (foxdrop://join?code=...) and computer link codes (foxdrop://link?code=...) from the web pages -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="foxdrop" android:host="join" />
+                <data android:host="link" />
             </intent-filter>
         </activity>
 

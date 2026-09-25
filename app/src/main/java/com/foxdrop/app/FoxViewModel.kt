@@ -39,6 +39,7 @@ class FoxViewModel(app: Application) : AndroidViewModel(app) {
         if (name.isBlank()) return
         prefs.statsName = name.trim()
         prefs.statsPlatform = platform
+        link.push()
         statsJob?.cancel()
         statsJob = viewModelScope.launch {
             stats = Load(loading = true)
@@ -57,10 +58,12 @@ class FoxViewModel(app: Application) : AndroidViewModel(app) {
     private var searchJob: Job? = null
 
     val crew = CrewModel(viewModelScope, prefs, onEvents = { eventsChanged() })
+    val link = LinkModel(viewModelScope, prefs)
 
     init {
         refreshAll()
         crew.start()
+        link.start()
     }
 
     override fun onCleared() = crew.close()

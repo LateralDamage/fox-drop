@@ -81,6 +81,28 @@ service cloud.firestore {
       allow delete: if signedIn() && (resource.data.uid == me() || isAdmin());
     }
 
+    // Linking a phone and a computer so they share the wishlist, Sprite checklist and saved Fortnite name.
+    // links/{code}: made by the computer and shown as a QR code. The phone that scans it writes its own uid,
+    // once, before the 5-minute expiry. The code is 32 random characters (the first factor); tapping Link
+    // on the phone is the second. The computer then adds the phone to its profile and deletes the link.
+    match /links/{code} {
+      allow get: if signedIn();
+      allow create: if signedIn() && request.resource.data.web == me()
+        && request.resource.data.keys().hasOnly(['web', 'profile', 'exp'])
+        && request.resource.data.exp is timestamp && request.resource.data.exp <= request.time + duration.value(10, 'm');
+      allow update: if signedIn() && !('phone' in resource.data) && request.time < resource.data.exp
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['phone'])
+        && request.resource.data.phone == me();
+      allow delete: if signedIn() && resource.data.web == me();
+    }
+
+    // The shared data itself. Only the devices listed in members can read or change it; a device unlinks
+    // by taking itself out of members.
+    match /profiles/{id} {
+      allow read, update, delete: if signedIn() && me() in resource.data.members;
+      allow create: if signedIn() && request.resource.data.members == [me()];
+    }
+
     match /chat/{id} {
       allow read: if isMember();
       allow create: if canPost() && authored(request.resource.data)

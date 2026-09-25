@@ -13,8 +13,8 @@ android {
         applicationId = "com.foxdrop.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 12
-        versionName = "1.4.7"
+        versionCode = 13
+        versionName = "1.5.0"
 
         // Chat and crew tips run on Firebase. These three values are public identifiers, not secrets
         // (the Firestore rules do the guarding). They live in firebase.properties; without it chat stays hidden.
@@ -91,6 +91,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.coroutines.play.services)
+    implementation(libs.code.scanner)
 }
 
 // The Play Console entry was created as foxdrop.myapp, and Play never lets that change. Only the Play

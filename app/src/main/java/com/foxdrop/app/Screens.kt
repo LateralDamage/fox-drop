@@ -187,6 +187,16 @@ fun FoxDropApp(vm: FoxViewModel, tab: Tab, onTab: (Tab) -> Unit, onTestFox: () -
     if (settings) SettingsDialog(vm, onTestFox, onClose = { settings = false })
     if (map) MapDialog(onClose = { map = false })
     if (stats) StatsDialog(vm, onClose = { stats = false })
+    vm.link.pending?.let {
+        AlertDialog(
+            onDismissRequest = { vm.link.pending = null },
+            containerColor = Panel,
+            title = { Text("Link this phone?", fontWeight = FontWeight.Black) },
+            text = { Text("This phone and Fox Drop on the computer will share your wishlist, Sprite checklist and saved Fortnite name. Only link a computer you use.") },
+            confirmButton = { Button(onClick = { vm.link.confirm() }) { Text("Link") } },
+            dismissButton = { TextButton(onClick = { vm.link.pending = null }) { Text("Cancel") } },
+        )
+    }
 }
 
 // ---------- shared bits ----------
@@ -562,6 +572,8 @@ private fun SettingsDialog(vm: FoxViewModel, onTestFox: () -> Unit, onClose: () 
                     }
                 }
                 Spacer(Modifier.height(8.dp))
+                LinkSection(vm)
+                Spacer(Modifier.height(8.dp))
                 val last = vm.prefs.lastCheck
                 Text(
                     "Checks every 15 minutes. " + if (last > 0) "Last check ${when_.format(Instant.ofEpochMilli(last))}." else "First check is running.",
@@ -587,4 +599,34 @@ private fun SettingsDialog(vm: FoxViewModel, onTestFox: () -> Unit, onClose: () 
         },
         confirmButton = { TextButton(onClick = onClose) { Text("Done") } },
     )
+}
+
+/** Linking with the web app on a computer: scan the QR code it shows, or see and undo an existing link. */
+@Composable
+private fun LinkSection(vm: FoxViewModel) {
+    val context = LocalContext.current
+    val link = vm.link
+    HorizontalDivider()
+    Spacer(Modifier.height(8.dp))
+    Text("💻 Link a computer", fontWeight = FontWeight.Bold)
+    if (link.linked) {
+        Text(
+            if (link.others > 0) "Linked. Your wishlist, Sprites and Fortnite name stay the same on both." else "Linked, waiting for the computer.",
+            fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f),
+        )
+        TextButton(onClick = { link.unlink() }) { Text("Unlink") }
+    } else {
+        Text(
+            "On the computer, open Fox Drop in the browser → ⚙ Settings → Link your phone, then scan the QR code.",
+            fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f),
+        )
+        OutlinedButton(enabled = !link.busy, onClick = {
+            val options = com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions.Builder()
+                .setBarcodeFormats(com.google.mlkit.vision.barcode.common.Barcode.FORMAT_QR_CODE).build()
+            com.google.mlkit.vision.codescanner.GmsBarcodeScanning.getClient(context, options).startScan()
+                .addOnSuccessListener { link.offer(it.rawValue.orEmpty()) }
+                .addOnFailureListener { link.notice = "The scanner didn't start. Try the phone's camera app on the QR code instead." }
+        }) { Text(if (link.busy) "Linking…" else "📷 Scan QR code") }
+    }
+    Problem(link.notice)
 }

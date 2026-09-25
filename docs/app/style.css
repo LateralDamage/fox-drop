@@ -162,3 +162,7 @@ dialog.map-dialog { width: min(1000px, calc(100vw - 32px)); }
 .map-box { overflow: auto; max-height: calc(100vh - 270px); border-radius: 12px; background: #0B3D91; }
 .map-box img { display: block; width: 100%; cursor: zoom-in; }
 .map-box img.zoomed { width: 300%; max-width: none; cursor: zoom-out; }
+
+/* Link-your-phone QR */
+.qr-box { background: #fff; border-radius: 14px; padding: 10px; width: min(280px, 100%); margin: 8px auto; }
+.qr-box svg { display: block; width: 100%; height: auto; }

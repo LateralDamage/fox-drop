@@ -40,8 +40,13 @@ class Prefs(context: Context) {
     fun toggleWish(w: Wish) {
         val now = _wishes.value.toMutableList()
         if (!now.removeAll { it.id == w.id }) now.add(0, w)
-        _wishes.value = now
-        sp.edit().putString("wishes", org.json.JSONArray(now.map {
+        setWishes(now)
+    }
+
+    /** Replaces the whole wishlist; also how a linked device's copy arrives (see Sync.kt). */
+    fun setWishes(list: List<Wish>) {
+        _wishes.value = list
+        sp.edit().putString("wishes", org.json.JSONArray(list.map {
             JSONObject().put("id", it.id).put("name", it.name).put("type", it.type).put("image", it.image ?: "")
         }).toString()).apply()
     }
@@ -83,10 +88,16 @@ class Prefs(context: Context) {
     /** Sprites Kollin has collected, as "family:variant" keys. */
     private val _sprites = MutableStateFlow(sp.getStringSet("sprites_got", emptySet()) ?: emptySet())
     val spritesGot: StateFlow<Set<String>> = _sprites
-    fun toggleSprite(key: String) {
-        _sprites.value = if (key in _sprites.value) _sprites.value - key else _sprites.value + key
-        sp.edit().putStringSet("sprites_got", _sprites.value).apply()
+    fun toggleSprite(key: String) = setSprites(if (key in _sprites.value) _sprites.value - key else _sprites.value + key)
+    fun setSprites(keys: Set<String>) {
+        _sprites.value = keys
+        sp.edit().putStringSet("sprites_got", keys).apply()
     }
+
+    /** The shared profile this phone is linked into, or null when it isn't linked to a computer. */
+    var profileId: String?
+        get() = sp.getString("profile_id", null)
+        set(v) = sp.edit().putString("profile_id", v).apply()
 
     /** Official crew events from Firestore, in the events.json shape; kept for the same offline reason. */
     var cloudEvents: String?

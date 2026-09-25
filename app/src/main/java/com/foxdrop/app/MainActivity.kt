@@ -89,6 +89,8 @@ class MainActivity : ComponentActivity() {
     private fun handle(intent: Intent?) {
         intent ?: return
         // An invite link (foxdrop://join?code=...) from the join page opens Chat with the code filled in.
+        // A link code (foxdrop://link?code=...) from the link page arms the "Link this phone?" question.
+        intent.data?.takeIf { it.scheme == "foxdrop" && it.host == "link" }?.let { vm.link.offer(it.toString()) }
         intent.data?.takeIf { it.scheme == "foxdrop" && it.host == "join" }?.getQueryParameter("code")?.let {
             vm.crew.invite = it
             tab = Tab.CHAT
