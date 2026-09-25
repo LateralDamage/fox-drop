@@ -40,7 +40,6 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Leaderboard
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Newspaper
-import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -154,7 +153,7 @@ fun FoxDropApp(vm: FoxViewModel, tab: Tab, onTab: (Tab) -> Unit, onTestFox: () -
                     Triple(Tab.CHAT, "Chat", ImageVector.vectorResource(R.drawable.ic_fox_chat)),
                     Triple(Tab.STATUS, "Servers", Icons.Filled.Dns),
                     Triple(Tab.WISHLIST, "Wishlist", Icons.Filled.Favorite),
-                    Triple(Tab.SPRITES, "Sprites", Icons.Filled.Pets),
+                    Triple(Tab.SPRITES, "Sprites", ImageVector.vectorResource(R.drawable.ic_sprite)),
                 )
                 items.forEach { (t, label, icon) ->
                     NavigationBarItem(

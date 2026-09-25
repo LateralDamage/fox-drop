@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
 
 private val Faint = Color.White.copy(alpha = 0.7f)
 
@@ -97,7 +99,7 @@ fun SpritesScreen(vm: FoxViewModel) {
             Text(
                 "Tap a version when you've collected it. Sprites come from Cheat Code chests: find the injector and " +
                     "punch in the arrows. " + list.variants.filter { it.note.isNotBlank() }.joinToString(" ") { "${it.name}: ${it.note.lowercase()}." } +
-                    "\nList updated ${list.updated}.",
+                    "\nList updated ${list.updated}." + (if (list.credit.isNotBlank()) " ${list.credit}" else ""),
                 fontSize = 12.sp, color = Faint, modifier = Modifier.padding(4.dp),
             )
         }
@@ -120,12 +122,22 @@ private fun SpriteCard(s: Sprite, names: Map<String, SpriteVariant>, got: Set<St
         border = if (done) BorderStroke(2.dp, Color(0xFFE8C02A)) else null,
     ) {
         Column(Modifier.padding(14.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(s.name, fontWeight = FontWeight.Black, fontSize = 18.sp, modifier = Modifier.weight(1f))
-                Text(if (done) "🏆 all ${s.variants.size}" else "$count / ${s.variants.size}", color = if (done) Color(0xFFE8C02A) else Faint, fontWeight = FontWeight.Bold)
+            Row(verticalAlignment = Alignment.Top) {
+                if (s.img.isNotBlank()) {
+                    AsyncImage(
+                        model = s.img, contentDescription = "${s.name} Sprite",
+                        modifier = Modifier.size(64.dp).padding(end = 10.dp),
+                    )
+                }
+                Column(Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(s.name, fontWeight = FontWeight.Black, fontSize = 18.sp, modifier = Modifier.weight(1f))
+                        Text(if (done) "🏆 all ${s.variants.size}" else "$count / ${s.variants.size}", color = if (done) Color(0xFFE8C02A) else Faint, fontWeight = FontWeight.Bold)
+                    }
+                    if (s.ability.isNotBlank()) Text(s.ability, fontSize = 14.sp)
+                    if (s.where.isNotBlank()) Text("📍 ${s.where}", fontSize = 13.sp, color = Faint)
+                }
             }
-            if (s.ability.isNotBlank()) Text(s.ability, fontSize = 14.sp)
-            if (s.where.isNotBlank()) Text("📍 ${s.where}", fontSize = 13.sp, color = Faint)
             Spacer(Modifier.height(10.dp))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 s.variants.forEach { v ->

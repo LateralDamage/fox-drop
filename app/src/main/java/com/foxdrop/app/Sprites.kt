@@ -11,10 +11,15 @@ const val SPRITES_URL = "https://lateraldamage.github.io/fox-drop/sprites.json"
 
 data class SpriteVariant(val id: String, val name: String, val note: String)
 
-/** One Sprite family; [variants] are the variant ids it comes in (most have all of them). */
-data class Sprite(val id: String, val name: String, val ability: String, val where: String, val variants: List<String>)
+/** Pictures sit next to sprites.json on the Pages site, so "img" is a path relative to it. */
+private const val SITE = "https://lateraldamage.github.io/fox-drop/"
 
-data class SpriteList(val season: String, val updated: String, val variants: List<SpriteVariant>, val sprites: List<Sprite>) {
+/** One Sprite family; [variants] are the variant ids it comes in (most have all of them). [img] is blank when there's no picture. */
+data class Sprite(val id: String, val name: String, val ability: String, val where: String, val variants: List<String>, val img: String = "")
+
+data class SpriteList(
+    val season: String, val updated: String, val variants: List<SpriteVariant>, val sprites: List<Sprite>, val credit: String = "",
+) {
     /** Every collectable, as the keys the checklist stores: "family:variant". */
     val keys get() = sprites.flatMap { s -> s.variants.map { "${s.id}:$it" } }
 
@@ -31,9 +36,10 @@ data class SpriteList(val season: String, val updated: String, val variants: Lis
                 Sprite(
                     s.getString("id"), s.getString("name"), s.optString("ability"), s.optString("where"),
                     own?.let { a -> (0 until a.length()).map { a.getString(it) } } ?: all,
+                    s.optString("img").let { if (it.isBlank() || it.startsWith("http")) it else SITE + it },
                 )
             }
-            return SpriteList(o.optString("season"), o.optString("updated"), variants, sprites)
+            return SpriteList(o.optString("season"), o.optString("updated"), variants, sprites, o.optString("credit"))
         }
     }
 }

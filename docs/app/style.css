@@ -166,3 +166,4 @@ dialog.map-dialog { width: min(1000px, calc(100vw - 32px)); }
 /* Link-your-phone QR */
 .qr-box { background: #fff; border-radius: 14px; padding: 10px; width: min(280px, 100%); margin: 8px auto; }
 .qr-box svg { display: block; width: 100%; height: auto; }
+.sprite-pic { width: 64px; height: 64px; object-fit: contain; flex: none; }

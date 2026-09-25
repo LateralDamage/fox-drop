@@ -251,7 +251,8 @@ async function loadSprites() {
   if (!r.ok) throw new Error('HTTP ' + r.status);
   const j = await r.json();
   const all = j.variants.map((v) => v.id);
-  const list = { ...j, sprites: j.sprites.map((s) => ({ ...s, variants: s.variants || all })) };
+  // "img" is relative to sprites.json (the pictures sit next to it on the Pages site)
+  const list = { ...j, sprites: j.sprites.map((s) => ({ ...s, variants: s.variants || all, img: s.img ? new URL(s.img, SPRITES_URL).href : '' })) };
   save('spriteList', list);
   return list;
 }
@@ -636,9 +637,14 @@ function renderSprites() {
       const n = s.variants.filter((v) => got.has(`${s.id}:${v}`)).length;
       const done = n === s.variants.length;
       return `<div class="card sprite${done ? ' done' : ''}">
-        <div class="row"><b class="grow" style="font-size:18px">${esc(s.name)}</b><b style="color:${done ? '#E8C02A' : 'var(--faint)'}">${done ? '🏆 all ' + s.variants.length : n + ' / ' + s.variants.length}</b></div>
-        ${s.ability ? `<div>${esc(s.ability)}</div>` : ''}
-        ${s.where ? `<div class="faint small">📍 ${esc(s.where)}</div>` : ''}
+        <div class="row" style="align-items:flex-start;gap:10px">
+          ${s.img ? `<img class="sprite-pic" src="${esc(s.img)}" alt="${esc(s.name)} Sprite" width="64" height="64" loading="lazy">` : ''}
+          <div class="grow">
+            <div class="row"><b class="grow" style="font-size:18px">${esc(s.name)}</b><b style="color:${done ? '#E8C02A' : 'var(--faint)'}">${done ? '🏆 all ' + s.variants.length : n + ' / ' + s.variants.length}</b></div>
+            ${s.ability ? `<div>${esc(s.ability)}</div>` : ''}
+            ${s.where ? `<div class="faint small">📍 ${esc(s.where)}</div>` : ''}
+          </div>
+        </div>
         <div class="chips">${s.variants.map((v) => {
           const key = `${s.id}:${v}`;
           const on = got.has(key);
@@ -646,7 +652,7 @@ function renderSprites() {
         }).join('')}</div>
       </div>`;
     }).join('')}</div>
-    <p class="faint small">Click a version when you've collected it. Sprites come from Cheat Code chests: find the injector and punch in the arrows. ${esc(notes)} List updated ${esc(list.updated)}. Your checklist is saved in this browser only.</p>
+    <p class="faint small">Click a version when you've collected it. Sprites come from Cheat Code chests: find the injector and punch in the arrows. ${esc(notes)} List updated ${esc(list.updated)}.${list.credit ? ' ' + esc(list.credit) : ''} Your checklist is saved in this browser only.</p>
   </div>`;
 }
 

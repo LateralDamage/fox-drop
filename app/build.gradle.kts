@@ -13,8 +13,8 @@ android {
         applicationId = "com.foxdrop.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 13
-        versionName = "1.5.0"
+        versionCode = 14
+        versionName = "1.5.1"
 
         // Chat and crew tips run on Firebase. These three values are public identifiers, not secrets
         // (the Firestore rules do the guarding). They live in firebase.properties; without it chat stays hidden.
