@@ -999,8 +999,11 @@ function listenProfile() {
     const wishes = (d.wishes || []).map((w) => ({ id: w.id, name: w.name, type: w.type, image: w.image || null }));
     const sprites = d.sprites || [];
     link.last = JSON.stringify([wishes.map((w) => ({ ...w, image: w.image || '' })), [...sprites].sort()]);
-    state.wishes = wishes; save('wishes', wishes);
-    state.spritesGot = new Set(sprites); save('spritesGot', sprites);
+    state.wishes = wishes;
+    state.spritesGot = new Set(sprites);
+    // Saved on the next tick: localStorage writes made inside this Firestore callback didn't stick in Chrome
+    // (they read back as null straight away), so the phone's changes were lost on reload when offline.
+    setTimeout(() => { save('wishes', wishes); save('spritesGot', sprites); }, 0);
     render(); refreshOpenDialog();
   }, () => forgetProfile());
 }

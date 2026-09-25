@@ -130,7 +130,8 @@ fun FoxDropApp(vm: FoxViewModel, tab: Tab, onTab: (Tab) -> Unit, onTestFox: () -
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Image(painterResource(R.drawable.ic_launcher_foreground), null, Modifier.size(44.dp))
-                        Text("Fox Drop", fontWeight = FontWeight.Black, fontSize = 24.sp, maxLines = 1, softWrap = false)
+                        // 20sp so the name still fits beside four buttons on the Fold's narrow outer screen.
+                        Text("Fox Drop", fontWeight = FontWeight.Black, fontSize = 20.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 },
                 actions = {
