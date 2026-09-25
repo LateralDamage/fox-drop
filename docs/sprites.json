@@ -1,6 +1,6 @@
 {
   "season": "Chapter 7 Season 4: Override",
-  "updated": "2026-09-24",
+  "updated": "2026-09-25",
   "variants": [
     { "id": "base", "name": "Base" },
     { "id": "gold", "name": "Gold" },
@@ -11,6 +11,7 @@
   "sprites": [
     { "id": "8bit", "name": "8-Bit", "ability": "Puts an 8-Bit Shotgun in your first chest.", "where": "High, mountainous areas" },
     { "id": "adventure", "name": "Adventure", "ability": "Upgrades a random item in your inventory each level.", "where": "High, mountainous areas" },
+    { "id": "birthday", "name": "Birthday", "ability": "Opening a chest can drop a Cake slice that heals Health and Shield. The chance grows each level, and at max level eliminations can drop Cake too.", "where": "From Sep 26, 2 PM ET. Extra spawns during the Birthday Power Hour (2-8 PM ET that day)" },
     { "id": "blinky", "name": "Blinky", "ability": "Cloaks you for a short time after you take damage.", "where": "At night" },
     { "id": "bush", "name": "Bush", "ability": "Gives you a Bush after a while. At max level, a Bush on every elimination.", "where": "All over the island" },
     { "id": "crash", "name": "Crash Bandicoot", "ability": "Spin attack that damages nearby opponents.", "where": "High, mountainous areas" },
