@@ -637,6 +637,29 @@ function renderSprites() {
   </div>`;
 }
 
+// The current island with every named location, from fortnite-api.com (same image as MapScreen.kt).
+// The date in the URL rolls the browser cache over daily, so a new season's map shows up by itself.
+function mapDialog() {
+  const url = 'https://fortnite-api.com/images/map_en.png?d=' + new Date().toISOString().slice(0, 10);
+  openDialog(() => `<h3>🗺️ Island map</h3>
+    <p class="faint small" style="margin-top:-6px">Click the map to zoom in or out, then scroll to look around.</p>
+    <div class="map-box"><img id="map-img" src="${url}" alt="Fortnite island map with location names"></div>
+    <div class="actions"><button class="btn ghost" data-act="close">Done</button></div>`);
+  dialog.classList.add('map-dialog');
+  dialog.onclick = (ev) => {
+    if (ev.target.id === 'map-img') {
+      const img = ev.target, box = img.parentElement, r = img.getBoundingClientRect();
+      // Where on the map was clicked, as a fraction, measured before the zoom changes the size.
+      const fx = (ev.clientX - r.left) / r.width, fy = (ev.clientY - r.top) / r.height;
+      if (img.classList.toggle('zoomed')) {
+        requestAnimationFrame(() => { box.scrollLeft = fx * img.clientWidth - box.clientWidth / 2; box.scrollTop = fy * img.clientHeight - box.clientHeight / 2; });
+      }
+    }
+    if (ev.target.closest('[data-act="close"]')) { dialog.onclick = null; closeDialog(); }
+  };
+  dialog.addEventListener('close', () => dialog.classList.remove('map-dialog'), { once: true });
+}
+
 function renderEvents() {
   const events = allEvents();
   const next = events[0];
@@ -972,6 +995,7 @@ main.addEventListener('click', (e) => {
 });
 $('#tabs').addEventListener('click', (e) => { const b = e.target.closest('button[data-tab]'); if (b) setTab(b.dataset.tab); });
 $('#refresh').addEventListener('click', () => refresh());
+$('#map').addEventListener('click', mapDialog);
 $('#settings').addEventListener('click', settingsDialog);
 
 let searchTimer;

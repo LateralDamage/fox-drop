@@ -156,3 +156,9 @@ dialog .scroll { max-height: 300px; overflow-y: auto; display: flex; flex-direct
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .chip { border: 2px solid var(--c); color: var(--c); background: none; border-radius: 999px; padding: 6px 12px; font-weight: 700; font-size: 13px; }
 .chip.on { background: var(--c); color: #120B2E; }
+
+/* Island map dialog */
+dialog.map-dialog { width: min(1000px, calc(100vw - 32px)); }
+.map-box { overflow: auto; max-height: calc(100vh - 270px); border-radius: 12px; background: #0B3D91; }
+.map-box img { display: block; width: 100%; cursor: zoom-in; }
+.map-box img.zoomed { width: 300%; max-width: none; cursor: zoom-out; }

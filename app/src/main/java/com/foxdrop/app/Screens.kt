@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.Celebration
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Refresh
@@ -118,6 +119,7 @@ fun rarityColor(r: String): Color = when (r.lowercase()) {
 @Composable
 fun FoxDropApp(vm: FoxViewModel, tab: Tab, onTab: (Tab) -> Unit, onTestFox: () -> Unit) {
     var settings by remember { mutableStateOf(false) }
+    var map by remember { mutableStateOf(false) }
     Scaffold(
         containerColor = Night,
         topBar = {
@@ -130,6 +132,7 @@ fun FoxDropApp(vm: FoxViewModel, tab: Tab, onTab: (Tab) -> Unit, onTestFox: () -
                     }
                 },
                 actions = {
+                    IconButton(onClick = { map = true }) { Icon(Icons.Filled.Map, "Island map") }
                     IconButton(onClick = { vm.refresh(tab) }) { Icon(Icons.Filled.Refresh, "Refresh") }
                     IconButton(onClick = { settings = true }) { Icon(Icons.Filled.Settings, "Alerts") }
                 },
@@ -179,6 +182,7 @@ fun FoxDropApp(vm: FoxViewModel, tab: Tab, onTab: (Tab) -> Unit, onTestFox: () -
         }
     }
     if (settings) SettingsDialog(vm, onTestFox, onClose = { settings = false })
+    if (map) MapDialog(onClose = { map = false })
 }
 
 // ---------- shared bits ----------
