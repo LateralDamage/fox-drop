@@ -60,6 +60,9 @@ data class Status(
     val allUp get() = services.all { it.status == "operational" }
 }
 
+/** Hosted settings; a blank [tipUrl] keeps the tip jar hidden. */
+data class AppConfig(val tipUrl: String, val tipNote: String)
+
 /** One mode's totals; winRate is already a percentage (12.5 means 12.5%). */
 data class ModeStats(
     val wins: Int, val kills: Int, val kd: Double, val matches: Int,
@@ -220,6 +223,15 @@ class Api(private val http: OkHttpClient) {
                 d.optJSONObject("battlePass")?.optInt("level"),
                 modes,
             )
+        }
+    }
+
+    /** docs/config.json: settings that change without an app release. Today only the tip jar link. */
+    suspend fun appConfig(): AppConfig = withContext(Dispatchers.IO) {
+        http.newCall(Request.Builder().url("https://lateraldamage.github.io/fox-drop/config.json?t=${System.currentTimeMillis() / 60000}").build()).execute().use { r ->
+            if (!r.isSuccessful) error("HTTP ${r.code} from config.json")
+            val o = JSONObject(r.body.string())
+            AppConfig(o.optString("tipUrl").trim(), o.optString("tipNote").trim())
         }
     }
 

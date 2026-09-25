@@ -226,7 +226,17 @@ function refresh(tab = state.tab) {
   if (tab === 'sprites') fetchInto('sprites', loadSprites);
 }
 
+// docs/config.json: settings that change without a release. Today only the tip jar link (blank = hidden).
+let appConfig = null;
+async function loadConfig() {
+  try {
+    const r = await fetch('../config.json?t=' + Math.floor(Date.now() / 60000));
+    if (r.ok) appConfig = await r.json();
+  } catch { /* offline: the tip jar just stays hidden */ }
+}
+
 function refreshAll() {
+  loadConfig();
   fetchInto('shop', loadShop).then(checkWishlist);
   fetchInto('fresh', loadNew);
   fetchInto('news', loadNews);
@@ -1088,6 +1098,9 @@ function settingsDialog() {
       <span class="faint small">Wishlist items in the shop, Fox Chat messages, and live-event reminders, while Fox Drop is open.</span></span></label>
     ${perm === 'default' ? '<button class="btn ghost" data-act="perm" style="margin-top:10px">Allow notifications</button>' : ''}
     ${perm === 'denied' ? '<p class="problem small">Notifications are blocked for this site. Turn them on in the browser\'s site settings.</p>' : ''}
+    ${appConfig?.tipUrl ? `<div style="margin-top:14px"><b>🦊 Tip jar</b><br>
+      <span class="faint small">${esc(appConfig.tipNote || 'Fox Drop is free with no ads. A grown-up can leave a tip to keep the fox fed.')}</span><br>
+      <a class="btn ghost" style="display:inline-block;margin-top:8px;text-decoration:none" href="${esc(appConfig.tipUrl)}" target="_blank" rel="noopener">Leave a tip ❤️</a></div>` : ''}
     <div style="margin-top:14px"><b>📱 Your phone</b><br>
       ${link.profileId ? `<span class="faint small">${link.others ? 'Linked: your wishlist, Sprites and Fortnite name stay the same on both.' : 'Not linked to a phone yet.'}</span>` : '<span class="faint small">Link Fox Drop on your phone to share your wishlist, Sprite checklist and Fortnite name.</span>'}<br>
       <button class="btn ghost" data-act="link" style="margin-top:8px">${link.others ? 'Link another phone' : 'Link your phone'}</button>

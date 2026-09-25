@@ -32,6 +32,8 @@ android {
         buildConfigField("String", "FORTNITE_API_KEY", "\"${fa.getProperty("key", "")}\"")
         // Sideloaded builds watch GitHub releases and offer the new APK. Play forbids self-updating, so "play" turns it off.
         buildConfigField("boolean", "SELF_UPDATE", "true")
+        // The tip jar links out to a payment page, which Play's payments policy may not allow, so the Play build hides it.
+        buildConfigField("boolean", "TIP_JAR", "true")
     }
 
     // The Play upload key lives outside the repo; without it the "play" build simply isn't signed.
@@ -61,6 +63,7 @@ android {
             initWith(getByName("release"))
             signingConfig = signingConfigs.findByName("upload")
             buildConfigField("boolean", "SELF_UPDATE", "false")
+            buildConfigField("boolean", "TIP_JAR", "false")
             matchingFallbacks += "release"
         }
     }

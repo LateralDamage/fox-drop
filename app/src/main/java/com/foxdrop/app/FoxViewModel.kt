@@ -32,6 +32,8 @@ class FoxViewModel(app: Application) : AndroidViewModel(app) {
     var sprites by mutableStateOf(Load(fox.prefs.remoteSprites?.let { runCatching { SpriteList.parse(it) }.getOrNull() })); private set
 
     var stats by mutableStateOf(Load<PlayerStats>()); private set
+    /** Hosted settings (the tip jar link); null until loaded, and it simply stays hidden if that fails. */
+    var config by mutableStateOf<AppConfig?>(null); private set
     private var statsJob: Job? = null
 
     /** Looks a player up; a StatsProblem keeps its own wording, anything else is blamed on the network. */
@@ -76,6 +78,7 @@ class FoxViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { status = fetch(status) { api.status() } }
         viewModelScope.launch { refreshEvents() }
         viewModelScope.launch { refreshSprites() }
+        viewModelScope.launch { runCatching { api.appConfig() }.onSuccess { config = it } }
     }
 
     private suspend fun refreshSprites() {

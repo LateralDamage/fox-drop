@@ -26,7 +26,9 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
@@ -551,7 +553,8 @@ private fun SettingsDialog(vm: FoxViewModel, onTestFox: () -> Unit, onClose: () 
         containerColor = Panel,
         title = { Text("Alerts", fontWeight = FontWeight.Black) },
         text = {
-            Column {
+            // Scrolls: with the Link section added, the list runs past the bottom of the Fold's outer screen.
+            Column(Modifier.verticalScroll(rememberScrollState())) {
                 if (!Notify.canPost(context)) {
                     Text("Notifications are off for Fox Drop. Turn them on in Android Settings → Apps → Fox Drop.", color = Color(0xFFFFB4A8))
                     Spacer(Modifier.height(8.dp))
@@ -572,6 +575,7 @@ private fun SettingsDialog(vm: FoxViewModel, onTestFox: () -> Unit, onClose: () 
                         Switch(on, { on = it; vm.prefs.setEnabled(k, it); if (k == AlertKind.EVENTS) vm.eventsChanged() })
                     }
                 }
+                TipJar(vm)
                 Spacer(Modifier.height(8.dp))
                 LinkSection(vm)
                 Spacer(Modifier.height(8.dp))
@@ -630,4 +634,18 @@ private fun LinkSection(vm: FoxViewModel) {
         }) { Text(if (link.busy) "Linking…" else "📷 Scan QR code") }
     }
     Problem(link.notice)
+}
+
+/** Opens the tip page in the browser. Sideloaded builds only (Play has its own payment rules), and only once a link is set. */
+@Composable
+private fun TipJar(vm: FoxViewModel) {
+    val c = vm.config ?: return
+    if (!BuildConfig.TIP_JAR || c.tipUrl.isBlank()) return
+    val context = LocalContext.current
+    HorizontalDivider()
+    Spacer(Modifier.height(8.dp))
+    Text("🦊 Tip jar", fontWeight = FontWeight.Bold)
+    Text(c.tipNote.ifBlank { "Fox Drop is free with no ads. A grown-up can leave a tip to keep the fox fed." }, fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
+    OutlinedButton(onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(c.tipUrl))) }) { Text("Leave a tip ❤️") }
+    Spacer(Modifier.height(8.dp))
 }
