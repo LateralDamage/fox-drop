@@ -13,8 +13,8 @@ android {
         applicationId = "com.foxdrop.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 11
-        versionName = "1.4.6"
+        versionCode = 12
+        versionName = "1.4.7"
 
         // Chat and crew tips run on Firebase. These three values are public identifiers, not secrets
         // (the Firestore rules do the guarding). They live in firebase.properties; without it chat stays hidden.
@@ -24,6 +24,12 @@ android {
         buildConfigField("String", "FIREBASE_API_KEY", "\"${fb.getProperty("apiKey", "")}\"")
         buildConfigField("String", "FIREBASE_APP_ID", "\"${fb.getProperty("appId", "")}\"")
         buildConfigField("String", "FIREBASE_PROJECT_ID", "\"${fb.getProperty("projectId", "")}\"")
+        // Player stats come from fortnite-api.com, which needs a free key (dash.fortnite-api.com). It lives in a
+        // git-ignored fortnite-api.properties (key=...); without it the Stats screen explains what is missing.
+        val fa = Properties().apply {
+            rootProject.file("fortnite-api.properties").takeIf { it.exists() }?.inputStream()?.use(::load)
+        }
+        buildConfigField("String", "FORTNITE_API_KEY", "\"${fa.getProperty("key", "")}\"")
         // Sideloaded builds watch GitHub releases and offer the new APK. Play forbids self-updating, so "play" turns it off.
         buildConfigField("boolean", "SELF_UPDATE", "true")
     }

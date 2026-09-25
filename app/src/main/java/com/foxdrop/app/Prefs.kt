@@ -67,6 +67,14 @@ class Prefs(context: Context) {
         get() = sp.getString("remote_events", null)
         set(v) = sp.edit().putString("remote_events", v).apply()
 
+    /** The last Fortnite name and platform looked up on the Stats screen, so it opens ready to go. */
+    var statsName: String
+        get() = sp.getString("stats_name", "") ?: ""
+        set(v) = sp.edit().putString("stats_name", v).apply()
+    var statsPlatform: String
+        get() = sp.getString("stats_platform", "epic") ?: "epic"
+        set(v) = sp.edit().putString("stats_platform", v).apply()
+
     /** The last sprites.json that downloaded, so the Sprites tab works offline. */
     var remoteSprites: String?
         get() = sp.getString("remote_sprites", null)

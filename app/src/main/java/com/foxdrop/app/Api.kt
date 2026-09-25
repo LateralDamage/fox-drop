@@ -60,6 +60,18 @@ data class Status(
     val allUp get() = services.all { it.status == "operational" }
 }
 
+/** One mode's totals; winRate is already a percentage (12.5 means 12.5%). */
+data class ModeStats(
+    val wins: Int, val kills: Int, val kd: Double, val matches: Int,
+    val winRate: Double, val top10: Int, val minutesPlayed: Int,
+)
+
+/** [modes] is keyed overall/solo/duo/squad/ltm; a mode never played is simply missing. */
+data class PlayerStats(val name: String, val battlePassLevel: Int?, val modes: Map<String, ModeStats>)
+
+/** A stats refusal worded for the player (private stats, unknown name, no key). */
+class StatsProblem(message: String) : Exception(message)
+
 data class AppRelease(val version: String, val title: String, val apkUrl: String) {
     /** True when this release is newer than [installed], comparing 1.4.2-style numbers part by part. */
     fun isNewerThan(installed: String): Boolean {
@@ -171,6 +183,43 @@ class Api(private val http: OkHttpClient) {
         http.newCall(Request.Builder().url("$EVENTS_URL?t=${System.currentTimeMillis() / 60000}").build()).execute().use { r ->
             if (!r.isSuccessful) error("HTTP ${r.code} from $EVENTS_URL")
             r.body.string().also { JSONObject(it) }   // throws on a half-written file instead of caching it
+        }
+    }
+
+    /**
+     * A player's Battle Royale stats by display name. Needs the fortnite-api.com key, and the player must have
+     * "public game stats" on in Fortnite, so each refusal becomes a message a kid can act on.
+     */
+    suspend fun stats(name: String, accountType: String, season: Boolean): PlayerStats = withContext(Dispatchers.IO) {
+        if (BuildConfig.FORTNITE_API_KEY.isBlank()) throw StatsProblem("Stats aren't switched on in this copy of Fox Drop yet.")
+        val url = okhttp3.HttpUrl.Builder().scheme("https").host("fortnite-api.com").addPathSegments("v2/stats/br/v2")
+            .addQueryParameter("name", name.trim()).addQueryParameter("accountType", accountType)
+            .addQueryParameter("timeWindow", if (season) "season" else "lifetime").build()
+        val req = Request.Builder().url(url).header("Authorization", BuildConfig.FORTNITE_API_KEY).build()
+        http.newCall(req).execute().use { r ->
+            when (r.code) {
+                200 -> {}
+                403 -> throw StatsProblem("${name.trim()}'s stats are private. In Fortnite: Settings → Account and Privacy → turn on Show on Career Leaderboard.")
+                404 -> throw StatsProblem("No player called \"${name.trim()}\" with stats. Check the spelling and the platform.")
+                401 -> throw StatsProblem("Fox Drop's stats key isn't working. Tell whoever looks after Fox Drop.")
+                429 -> throw StatsProblem("Too many lookups right now. Try again in a minute.")
+                else -> error("HTTP ${r.code}")
+            }
+            val d = JSONObject(r.body.string()).getJSONObject("data")
+            val all = d.optJSONObject("stats")?.optJSONObject("all")
+            val modes = listOf("overall", "solo", "duo", "squad", "ltm").mapNotNull { m ->
+                all?.optJSONObject(m)?.let { o ->
+                    m to ModeStats(
+                        o.optInt("wins"), o.optInt("kills"), o.optDouble("kd", 0.0), o.optInt("matches"),
+                        o.optDouble("winRate", 0.0), o.optInt("top10"), o.optInt("minutesPlayed"),
+                    )
+                }
+            }.toMap()
+            PlayerStats(
+                d.optJSONObject("account")?.optString("name").orEmpty().ifBlank { name.trim() },
+                d.optJSONObject("battlePass")?.optInt("level"),
+                modes,
+            )
         }
     }
 

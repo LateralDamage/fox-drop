@@ -31,6 +31,27 @@ class FoxViewModel(app: Application) : AndroidViewModel(app) {
     /** Starts from the cached copy so the checklist shows at once, even offline. */
     var sprites by mutableStateOf(Load(fox.prefs.remoteSprites?.let { runCatching { SpriteList.parse(it) }.getOrNull() })); private set
 
+    var stats by mutableStateOf(Load<PlayerStats>()); private set
+    private var statsJob: Job? = null
+
+    /** Looks a player up; a StatsProblem keeps its own wording, anything else is blamed on the network. */
+    fun lookupStats(name: String, platform: String, season: Boolean) {
+        if (name.isBlank()) return
+        prefs.statsName = name.trim()
+        prefs.statsPlatform = platform
+        statsJob?.cancel()
+        statsJob = viewModelScope.launch {
+            stats = Load(loading = true)
+            stats = try {
+                Load(api.stats(name, platform, season))
+            } catch (e: StatsProblem) {
+                Load(error = e.message)
+            } catch (e: Exception) {
+                Load(error = "Couldn't reach the stats server. Check your internet and try again.")
+            }
+        }
+    }
+
     var query by mutableStateOf(""); private set
     var results by mutableStateOf(Load<List<Cosmetic>>()); private set
     private var searchJob: Job? = null
