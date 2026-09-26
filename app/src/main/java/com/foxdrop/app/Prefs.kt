@@ -77,7 +77,7 @@ class Prefs(context: Context) {
         get() = sp.getString("stats_name", "") ?: ""
         set(v) = sp.edit().putString("stats_name", v).apply()
     var statsPlatform: String
-        get() = sp.getString("stats_platform", "epic") ?: "epic"
+        get() = sp.getString("stats_platform", "psn") ?: "psn"   // Kollin plays on PlayStation
         set(v) = sp.edit().putString("stats_platform", v).apply()
 
     /** The last sprites.json that downloaded, so the Sprites tab works offline. */

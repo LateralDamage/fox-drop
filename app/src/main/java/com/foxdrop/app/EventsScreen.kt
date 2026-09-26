@@ -61,6 +61,7 @@ import java.time.format.DateTimeFormatter
 
 private val fullWhen = DateTimeFormatter.ofPattern("EEE MMM d, h:mm a").withZone(ZoneId.systemDefault())
 private val dayOnly = DateTimeFormatter.ofPattern("EEE MMM d").withZone(ZoneId.systemDefault())
+private val endTime = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault())
 
 /** Ticks once a second while on screen. */
 @Composable
@@ -71,7 +72,11 @@ private fun rememberNow(): Instant {
 }
 
 private fun whenText(e: LiveEvent) =
-    if (e.approx) "${dayOnly.format(e.start)} · time not announced yet" else fullWhen.format(e.start)
+    if (e.approx) "${dayOnly.format(e.start)} · time not announced yet"
+    else fullWhen.format(e.start) + (e.end?.let { " – " + endTime.format(it) } ?: "")
+
+/** "ends in 2:41:10" while a timed event with an end is on, else null. */
+private fun endsIn(e: LiveEvent, now: Instant) = e.end?.takeIf { e.isLive(now) }?.let { countdown(Duration.between(now, it)) }
 
 @Composable
 fun EventsScreen(vm: FoxViewModel) {
@@ -191,6 +196,10 @@ private fun HeroCountdown(e: LiveEvent, now: Instant) {
             Spacer(Modifier.height(10.dp))
             val d = Duration.between(now, e.start)
             when {
+                live && e.end != null -> {
+                    Text("ends in", fontSize = 13.sp, color = Color.White.copy(alpha = 0.85f))
+                    Text(endsIn(e, now)!!, fontSize = 44.sp, fontWeight = FontWeight.Black, color = Color(0xFFFFD54F))
+                }
                 live -> Text("Go go go!", fontSize = 40.sp, fontWeight = FontWeight.Black, color = Color(0xFFFFD54F))
                 e.approx -> {
                     val days = Duration.between(now, e.start).toDays()
@@ -231,7 +240,12 @@ private fun EventRow(e: LiveEvent, now: Instant, canDelete: Boolean, onDelete: (
             }
             val d = Duration.between(now, e.start)
             Text(
-                if (e.approx) "~${d.toDays()}d" else if (d.toDays() > 0) "${d.toDays()}d" else countdown(d),
+                when {
+                    e.isLive(now) -> endsIn(e, now)?.let { "LIVE · $it" } ?: "LIVE"
+                    e.approx -> "~${d.toDays()}d"
+                    d.toDays() > 0 -> "${d.toDays()}d"
+                    else -> countdown(d)
+                },
                 fontWeight = FontWeight.Black, color = FoxOrange,
             )
             if (canDelete) IconButton(onClick = onDelete) { Icon(Icons.Filled.Delete, "Remove") }
@@ -254,7 +268,7 @@ fun NextEventStrip(vm: FoxViewModel, onOpen: () -> Unit) {
             val d = Duration.between(now, e.start)
             Text(
                 when {
-                    e.isLive(now) -> "GO!"
+                    e.isLive(now) -> endsIn(e, now)?.let { "ends $it" } ?: "GO!"
                     e.approx -> "~${d.toDays()} days"
                     else -> countdown(d)
                 },

@@ -37,11 +37,16 @@ class FoxViewModel(app: Application) : AndroidViewModel(app) {
     private var statsJob: Job? = null
 
     /** Looks a player up; a StatsProblem keeps its own wording, anything else is blamed on the network. */
-    fun lookupStats(name: String, platform: String, season: Boolean) {
-        if (name.isBlank()) return
+    /** Keeps the Stats name and platform (and shares them with a linked computer). */
+    fun saveStatsName(name: String, platform: String) {
         prefs.statsName = name.trim()
         prefs.statsPlatform = platform
         link.push()
+    }
+
+    fun lookupStats(name: String, platform: String, season: Boolean) {
+        if (name.isBlank()) return
+        saveStatsName(name, platform)
         statsJob?.cancel()
         statsJob = viewModelScope.launch {
             stats = Load(loading = true)

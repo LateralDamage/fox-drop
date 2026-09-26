@@ -34,26 +34,38 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import java.net.URLEncoder
 import java.util.Locale
 
 private val Faint = Color.White.copy(alpha = 0.7f)
 private val platforms = listOf("epic" to "PC / Epic", "psn" to "PlayStation", "xbl" to "Xbox")
 private val modeNames = listOf("solo" to "Solo", "duo" to "Duos", "squad" to "Squads", "ltm" to "Other modes")
 
-/** Battle Royale stats by Fortnite name: no login, but the player's stats must be public in Fortnite. */
+/** The player's Fortnite Tracker page: a keyless fallback, and a way to see more than Fox Drop shows. */
+private fun trackerUrl(name: String, platform: String) =
+    "https://fortnitetracker.com/fortnite/profile/$platform/" + URLEncoder.encode(name.trim(), "UTF-8").replace("+", "%20")
+
+/**
+ * Battle Royale stats by Fortnite name: no login, but the player's stats must be public in Fortnite. Without a
+ * fortnite-api.com key the screen only offers the Fortnite Tracker page, which needs no key at all.
+ */
 @Composable
 fun StatsDialog(vm: FoxViewModel, onClose: () -> Unit) {
     Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         var name by remember { mutableStateOf(vm.prefs.statsName) }
         var platform by remember { mutableStateOf(vm.prefs.statsPlatform) }
         var season by remember { mutableStateOf(false) }
-        val look = { vm.lookupStats(name, platform, season) }
+        val uri = LocalUriHandler.current
+        val hasKey = BuildConfig.FORTNITE_API_KEY.isNotBlank()
+        val tracker = { vm.saveStatsName(name, platform); uri.openUri(trackerUrl(name, platform)) }
+        val look = { if (hasKey) vm.lookupStats(name, platform, season) else tracker() }
         Column(Modifier.fillMaxSize().background(Night).statusBarsPadding().imePadding()) {
             Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text("📊 Player stats", fontWeight = FontWeight.Black, fontSize = 20.sp, color = Color.White, modifier = Modifier.weight(1f))
@@ -67,11 +79,20 @@ fun StatsDialog(vm: FoxViewModel, onClose: () -> Unit) {
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Pills(platforms, platform) { platform = it }
-                Pills(listOf("life" to "All time", "season" to "This season"), if (season) "season" else "life") { season = it == "season" }
-                Button(
-                    onClick = look, enabled = name.isNotBlank() && !vm.stats.loading,
+                if (hasKey) {
+                    Pills(listOf("life" to "All time", "season" to "This season"), if (season) "season" else "life") { season = it == "season" }
+                    Button(
+                        onClick = look, enabled = name.isNotBlank() && !vm.stats.loading,
+                        colors = ButtonDefaults.buttonColors(containerColor = FoxOrange), modifier = Modifier.fillMaxWidth(),
+                    ) { Text(if (vm.stats.loading) "Looking…" else "Look up") }
+                }
+                val trackerButton: @Composable () -> Unit = { Text("Open on Fortnite Tracker ↗") }
+                if (hasKey) OutlinedButton(tracker, enabled = name.isNotBlank(), modifier = Modifier.fillMaxWidth(), content = { trackerButton() })
+                else Button(
+                    tracker, enabled = name.isNotBlank(),
                     colors = ButtonDefaults.buttonColors(containerColor = FoxOrange), modifier = Modifier.fillMaxWidth(),
-                ) { Text(if (vm.stats.loading) "Looking…" else "Look up") }
+                    content = { trackerButton() },
+                )
                 Text(
                     "Pick the platform the Fortnite name belongs to (PC / Epic works for most players). Stats have to be public: " +
                         "Fortnite → Settings → Account and Privacy → Show on Career Leaderboard.",

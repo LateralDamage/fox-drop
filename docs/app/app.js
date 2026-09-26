@@ -150,12 +150,16 @@ function parseEvent(o, custom) {
   if (o.start) start = new Date(o.start);
   else if (o.date) { const [y, m, d] = o.date.split('-').map(Number); start = new Date(y, m - 1, d); approx = true; }
   if (!start || isNaN(start)) return null;
-  return { id: o.id, title: o.title, start, approx, note: o.note || '', custom };
+  // An optional "end" keeps a long event (a 3-hour Power Hour) live until then, counting down to it.
+  const end = !approx && o.end ? new Date(o.end) : null;
+  return { id: o.id, title: o.title, start, approx, note: o.note || '', custom, ...(end && end > start ? { end } : {}) };
 }
-const isLive = (e, now = Date.now()) => !e.approx && now >= e.start && now < e.start.getTime() + LIVE_MS;
-const isOver = (e, now = Date.now()) => now >= (e.approx ? e.start.getTime() + 86400000 : e.start.getTime() + LIVE_MS);
-const whenText = (e) => (e.approx ? `${fmtDay(e.start)} · time not announced yet` : fmtWhen(e.start));
-const eventJson = (e) => ({ id: e.id, title: e.title, note: e.note, ...(e.approx ? { date: dayString(e.start) } : { start: e.start.toISOString() }) });
+const liveUntil = (e) => (e.end ? e.end.getTime() : e.start.getTime() + LIVE_MS);
+const isLive = (e, now = Date.now()) => !e.approx && now >= e.start && now < liveUntil(e);
+const isOver = (e, now = Date.now()) => now >= (e.approx ? e.start.getTime() + 86400000 : liveUntil(e));
+const whenText = (e) => (e.approx ? `${fmtDay(e.start)} · time not announced yet` : fmtWhen(e.start) + (e.end ? ` – ${fmtClock(e.end)}` : ''));
+const eventJson = (e) => ({ id: e.id, title: e.title, note: e.note, ...(e.approx ? { date: dayString(e.start) } : { start: e.start.toISOString() }), ...(e.end ? { end: e.end.toISOString() } : {}) });
+const endsIn = (e, short) => (e.end && isLive(e) ? `<span data-until="${e.end.getTime()}"${short ? ' data-short="1"' : ''}></span>` : null);
 const dayString = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
 function allEvents() {
@@ -479,7 +483,8 @@ function scheduleReminders() {
       [e.start - 86400000, `⏰ ${e.title} is tomorrow!`, `Starts ${fmtWhen(e.start)}.`],
       [e.start - 3600000, `⏰ ${e.title} starts in 1 hour`, `Starts at ${fmtClock(e.start)}. Update Fortnite now!`],
       [e.start - 600000, `🔥 ${e.title} in 10 minutes!`, 'Jump in now so you don\'t miss it!'],
-      [e.start.getTime(), `🔴 ${e.title} is LIVE!`, "It's happening right now. Go go go!"],
+      [e.start.getTime(), `🔴 ${e.title} is LIVE!`, e.end ? `It's on until ${fmtClock(e.end)}. Go go go!` : "It's happening right now. Go go go!"],
+      ...(e.end && e.end - e.start > 1800000 ? [[e.end - 900000, `⏳ ${e.title} ends in 15 minutes`, `Last chance, it ends at ${fmtClock(e.end)}!`]] : []),
     ];
     for (const [at, title, body] of pings) {
       const wait = at - now;
@@ -511,7 +516,7 @@ function nextEventStrip() {
   const e = allEvents()[0];
   if (!e) return '';
   const label = isLive(e) ? '🔴 Live now' : 'Next live event';
-  const right = isLive(e) ? 'GO!' : e.approx ? `~${Math.ceil((e.start - Date.now()) / 86400000)} days` : `<span data-until="${e.start.getTime()}"></span>`;
+  const right = isLive(e) ? (endsIn(e) ? `ends ${endsIn(e)}` : 'GO!') : e.approx ? `~${Math.ceil((e.start - Date.now()) / 86400000)} days` : `<span data-until="${e.start.getTime()}"></span>`;
   return `<div class="card strip row" data-goto="events"><div class="grow"><div class="faint small">${label}</div><b>${esc(e.title)}</b></div><div class="big-num">${right}</div></div>`;
 }
 
@@ -688,7 +693,7 @@ function renderEvents() {
   if (!next) hero = '<div class="card center" style="padding:24px"><div class="emoji">🦊</div><b>No live event on the calendar yet</b><p class="faint">When Epic announces one, it shows up here with a countdown.</p></div>';
   else {
     const live = isLive(next);
-    const clock = live ? 'Go go go!' : next.approx ? (() => { const d = Math.floor((next.start - Date.now()) / 86400000); return d <= 0 ? 'Today!' : `about ${d} day${d === 1 ? '' : 's'}`; })()
+    const clock = live ? (endsIn(next) ? `<div class="small">ends in</div>${endsIn(next)}` : 'Go go go!') : next.approx ? (() => { const d = Math.floor((next.start - Date.now()) / 86400000); return d <= 0 ? 'Today!' : `about ${d} day${d === 1 ? '' : 's'}`; })()
       : `<span data-until="${next.start.getTime()}"></span>`;
     hero = `<div class="hero${live ? ' live' : ''}"><div class="kicker">${live ? '🔴 LIVE NOW' : 'NEXT LIVE EVENT'}</div><div class="title">${esc(next.title)}</div>
       <div class="clock">${clock}</div><div>${esc(whenText(next))}</div>${next.note ? `<p class="faint">${esc(next.note)}</p>` : ''}
@@ -696,7 +701,7 @@ function renderEvents() {
       ${removable(next) ? `<button class="btn text" data-remove-event="${esc(next.id)}">Remove "${esc(next.title)}"${next.custom ? '' : ' for everyone'}</button>` : ''}`;
   }
   const rest = events.slice(1).map((e) => {
-    const right = e.approx ? `~${Math.ceil((e.start - Date.now()) / 86400000)}d` : `<span data-until="${e.start.getTime()}" data-short="1"></span>`;
+    const right = isLive(e) ? `LIVE${endsIn(e, true) ? ' · ' + endsIn(e, true) : ''}` : e.approx ? `~${Math.ceil((e.start - Date.now()) / 86400000)}d` : `<span data-until="${e.start.getTime()}" data-short="1"></span>`;
     return `<div class="card row"><div class="grow"><b>${esc(e.title)}</b><div class="faint small">${esc(whenText(e))}</div>
       ${e.custom ? '<div class="small" style="color:var(--sky)">Added by you</div>' : ''}</div><div class="big-num" style="font-size:20px">${right}</div>
       ${removable(e) ? `<button class="btn danger" data-remove-event="${esc(e.id)}" title="Remove">🗑</button>` : ''}</div>`;

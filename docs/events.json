@@ -1,5 +1,5 @@
 {
-  "_help": "Fox Drop live events. Use \"start\" (UTC, e.g. 2026-10-31T18:00:00Z) when the time is known, or \"date\" (YYYY-MM-DD) when only the day is. Each id must be unique; changing an event's time sends a 'new time' alert. Past events drop off by themselves.",
+  "_help": "Fox Drop live events. Use \"start\" (UTC, e.g. 2026-10-31T18:00:00Z) when the time is known, or \"date\" (YYYY-MM-DD) when only the day is. Add \"end\" (UTC) for something that lasts, like a Power Hour: it stays live and counts down to the end, with a 15-minutes-left alert. Each id must be unique; changing an event's time sends a 'new time' alert. Past events drop off by themselves.",
   "updated": "2026-09-26",
   "events": [
     {
@@ -10,17 +10,19 @@
     },
     {
       "id": "power-hour-2026-09-26a",
-      "title": "Birthday Power Hour #1 (until 5 PM ET)",
+      "title": "Birthday Power Hour #1",
       "start": "2026-09-26T18:00:00Z",
-      "note": "Birthday Power Hour, 3 hours. Everyone drops with Presents, the Exotic Balloon Popper AR is in the wild, the Birthday Sprites (all 5 variants) arrive, and chests can drop 1-Up Tokens and Portable Extractors.",
-      "link": "https://www.vice.com/en/article/fortnite-power-hour-today-start-time-birthday-sprites/"
+      "note": "Runs 2-5 PM ET. Everyone drops with Presents, the Exotic Balloon Popper AR is in the wild, the Birthday Sprites (all 5 variants) arrive, and chests can drop 1-Up Tokens and Portable Extractors.",
+      "link": "https://www.vice.com/en/article/fortnite-power-hour-today-start-time-birthday-sprites/",
+      "end": "2026-09-26T21:00:00Z"
     },
     {
       "id": "power-hour-2026-09-26b",
-      "title": "Birthday Power Hour #2 (until midnight ET)",
+      "title": "Birthday Power Hour #2",
       "start": "2026-09-27T01:00:00Z",
-      "note": "Birthday Power Hour, 3 hours. Everyone drops with Presents, the Exotic Balloon Popper AR is in the wild, the Birthday Sprites (all 5 variants) arrive, and chests can drop 1-Up Tokens and Portable Extractors.",
-      "link": "https://www.vice.com/en/article/fortnite-power-hour-today-start-time-birthday-sprites/"
+      "note": "Runs 9 PM-midnight ET. Everyone drops with Presents, the Exotic Balloon Popper AR is in the wild, the Birthday Sprites (all 5 variants) arrive, and chests can drop 1-Up Tokens and Portable Extractors.",
+      "link": "https://www.vice.com/en/article/fortnite-power-hour-today-start-time-birthday-sprites/",
+      "end": "2026-09-27T04:00:00Z"
     }
   ]
 }

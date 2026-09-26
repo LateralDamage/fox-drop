@@ -1,6 +1,6 @@
 // Keeps the app shell on the PC so Fox Drop opens instantly and still shows its window offline.
 // Feeds and Firebase always go to the network; only these files are cached. Bump VERSION on every release.
-const VERSION = 'foxdrop-app-10';
+const VERSION = 'foxdrop-app-11';
 const SHELL = ['./', 'index.html', 'style.css', 'app.js', 'fox-chat.svg', 'sprite.svg', 'icon-192.png', 'icon-512.png', '../icon.svg', 'manifest.webmanifest', 'qrcode.js'];
 
 self.addEventListener('install', (e) => {

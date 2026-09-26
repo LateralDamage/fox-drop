@@ -21,7 +21,8 @@ import java.time.format.DateTimeFormatter
  *  - EVENTS_URL, a hand-kept list on the Fox Drop GitHub Pages site, edited when Epic announces something
  *  - events Kollin adds himself in the app
  * An event with only a date ("date" instead of "start" in the JSON) is approximate: Epic has said the day
- * but not the time, so it gets day-level reminders instead of minute-level ones.
+ * but not the time, so it gets day-level reminders instead of minute-level ones. An optional "end" (UTC)
+ * is for things that last, like a 3-hour Power Hour: the event stays live until then, counting down to it.
  */
 const val EVENTS_URL = "https://lateraldamage.github.io/fox-drop/events.json"
 
@@ -33,16 +34,19 @@ data class LiveEvent(
     val note: String,
     val link: String?,
     val custom: Boolean,
+    val end: Instant? = null,
 ) {
-    /** Epic events usually run 10-30 minutes; call it live for half an hour after it starts. */
-    fun isLive(now: Instant = Instant.now()) = !approx && now >= start && now < start.plus(LIVE_FOR)
+    /** When it stops being live: [end] if known, else half an hour in (Epic live events usually run 10-30 minutes). */
+    val liveUntil: Instant get() = end ?: start.plus(LIVE_FOR)
+    fun isLive(now: Instant = Instant.now()) = !approx && now >= start && now < liveUntil
     fun isOver(now: Instant = Instant.now()) =
-        now >= if (approx) start.plus(Duration.ofDays(1)) else start.plus(LIVE_FOR)
+        now >= if (approx) start.plus(Duration.ofDays(1)) else liveUntil
 
     fun toJson(): JSONObject = JSONObject().put("id", id).put("title", title).put("note", note)
         .put("link", link ?: "").apply {
             if (approx) put("date", start.atZone(ZoneId.systemDefault()).toLocalDate().toString())
             else put("start", start.toString())
+            end?.let { put("end", it.toString()) }
         }
 
     companion object {
@@ -59,6 +63,7 @@ data class LiveEvent(
                 note = o.optString("note"),
                 link = o.optString("link").takeIf { it.startsWith("http") },
                 custom = custom,
+                end = o.optString("end").takeIf { exact != null && it.isNotBlank() }?.let(Instant::parse)?.takeIf { it > exact },
             )
         }.getOrNull()
 
@@ -118,8 +123,11 @@ object EventAlarms {
                 "Starts at ${hm.format(e.start)}. Update Fortnite now and log in early, live events fill up!"),
             Ping("10m", e.start.minus(Duration.ofMinutes(10)), "🔥 ${e.title} in 10 minutes!",
                 "Jump in now so you don't miss it!"),
-            Ping("live", e.start, "🔴 ${e.title} is LIVE!", "It's happening right now. Go go go!"),
-        )
+            Ping("live", e.start, "🔴 ${e.title} is LIVE!",
+                if (e.end != null) "It's on until ${hm.format(e.end)}. Go go go!" else "It's happening right now. Go go go!"),
+        ) + listOfNotNull(e.end?.takeIf { Duration.between(e.start, it) > Duration.ofMinutes(30) }?.let {
+            Ping("end15", it.minus(Duration.ofMinutes(15)), "⏳ ${e.title} ends in 15 minutes", "Last chance, it ends at ${hm.format(it)}!")
+        })
     }
 
     fun canBeExact(context: Context): Boolean =
