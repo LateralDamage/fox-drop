@@ -31,7 +31,10 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.sin
 
-private const val RUN_MS = 1900L
+private const val DROP_MS = 1300L
+private const val LAND_MS = 220L
+private const val RUN_MS = 1100L
+private const val TOTAL_MS = DROP_MS + LAND_MS + RUN_MS
 private const val FADE_MS = 250L
 
 private val Orange = Color(0xFFF26B1D)
@@ -40,8 +43,8 @@ private val Cream = Color(0xFFFFF4E6)
 private val Sock = Color(0xFF3A1A0C)
 
 /**
- * Plays when Kollin taps a notification: a fox sprints across the screen, then [onDone] fires
- * and the app shows the tab the alert was about. Tapping skips it.
+ * Plays when the app opens or Kollin taps a notification: a fox parachutes in, lands and sprints
+ * off the screen, then [onDone] fires and the app shows the tab the alert was about. Tapping skips it.
  */
 @Composable
 fun RunningFoxOverlay(message: String, onDone: () -> Unit) {
@@ -50,36 +53,68 @@ fun RunningFoxOverlay(message: String, onDone: () -> Unit) {
     var elapsed by remember { mutableLongStateOf(0L) }
     LaunchedEffect(Unit) {
         val start = withFrameMillis { it }
-        while (elapsed < RUN_MS + FADE_MS) {
+        while (elapsed < TOTAL_MS + FADE_MS) {
             elapsed = withFrameMillis { it } - start
         }
         onDone()
     }
-    val progress = (elapsed.toFloat() / RUN_MS).coerceIn(0f, 1f)
-    val fade = 1f - ((elapsed - RUN_MS).toFloat() / FADE_MS).coerceIn(0f, 1f)
+    val ms = elapsed.coerceAtMost(TOTAL_MS).toFloat()
+    val fade = 1f - ((elapsed - TOTAL_MS).toFloat() / FADE_MS).coerceIn(0f, 1f)
     Box(
         Modifier.fillMaxSize().alpha(fade).background(Night),
         contentAlignment = Alignment.Center,
     ) {
         Canvas(Modifier.fillMaxSize()) {
-            val t = progress
             val scale = size.width / 420f
-            val foxX = -140f * scale + t * (size.width + 280f * scale)
             val ground = size.height * 0.55f
-            // Five strides across the screen.
-            val phase = t * 2f * PI.toFloat() * 5f
+            val landX = size.width * 0.38f
+            val twoPi = 2f * PI.toFloat()
 
-            // Ground line and dust puffs kicked up behind the fox.
             drawLine(Color.White.copy(alpha = 0.12f), Offset(0f, ground + 44f * scale), Offset(size.width, ground + 44f * scale), 3f * scale)
-            for (i in 1..4) {
-                val lag = i * 0.035f
-                val px = -140f * scale + (t - lag) * (size.width + 280f * scale) - 60f * scale
-                val a = (0.35f - i * 0.07f).coerceAtLeast(0f)
-                drawCircle(Color.White.copy(alpha = a), radius = (5f + i * 3f) * scale, center = Offset(px, ground + 40f * scale - i * 4f * scale))
-            }
 
-            val bob = -abs(sin(phase)) * 8f * scale
-            translate(foxX, ground + bob) { drawFox(scale, phase) }
+            if (ms < DROP_MS) {
+                // Drop: eases out as the chute catches air, swinging like a pendulum that settles.
+                val d = ms / DROP_MS
+                val ease = 1f - (1f - d) * (1f - d)
+                val x = landX - (1f - ease) * 30f * scale
+                val y = -80f * scale + ease * (ground + 80f * scale)
+                val sway = sin(d * twoPi * 1.5f) * 9f * (1f - d * 0.7f)
+                translate(x, y) {
+                    rotate(sway, pivot = Offset(0f, -170f * scale)) {
+                        drawChute(scale, 1f)
+                        drawFox(scale, d * twoPi * 1.6f, swingAmp = 12f)
+                    }
+                }
+            } else {
+                val since = ms - DROP_MS
+                // The chute lets go, tips back and fades while the fox gets moving.
+                val c = (since / (LAND_MS + 300f)).coerceIn(0f, 1f)
+                if (c < 1f) translate(landX - c * 50f * scale, ground + c * 10f * scale) {
+                    rotate(-35f * c, pivot = Offset(0f, -22f * scale)) { drawChute(scale, 1f - c) }
+                }
+                if (since < LAND_MS) {
+                    // Touchdown: a quick crouch and a puff of dust either side.
+                    val l = since / LAND_MS
+                    for (side in listOf(-1f, 1f)) {
+                        drawCircle(Color.White.copy(alpha = 0.35f * (1f - l)), radius = (6f + l * 16f) * scale, center = Offset(landX + side * (30f + l * 20f) * scale, ground + 40f * scale))
+                    }
+                    translate(landX, ground + sin(l * PI.toFloat()) * 6f * scale) { drawFox(scale, 0f, swingAmp = 0f) }
+                } else {
+                    // Run: starts at a jog and speeds up; four strides off the right edge.
+                    val r = (since - LAND_MS) / RUN_MS
+                    fun along(r: Float) = r * (0.35f + 0.65f * r)
+                    val span = size.width - landX + 160f * scale
+                    val phase = along(r) * twoPi * 4f
+                    for (i in 1..4) {
+                        val back = r - i * 0.04f
+                        if (back <= 0f) continue
+                        val a = (0.35f - i * 0.07f).coerceAtLeast(0f)
+                        drawCircle(Color.White.copy(alpha = a), radius = (5f + i * 3f) * scale, center = Offset(landX + along(back) * span - 60f * scale, ground + 40f * scale - i * 4f * scale))
+                    }
+                    val bob = -abs(sin(phase)) * 8f * scale
+                    translate(landX + along(r) * span, ground + bob) { drawFox(scale, phase) }
+                }
+            }
         }
         Text(
             message,
@@ -91,8 +126,33 @@ fun RunningFoxOverlay(message: String, onDone: () -> Unit) {
     }
 }
 
-/** A side-on fox facing right, origin at the middle of its body. */
-private fun DrawScope.drawFox(s: Float, phase: Float) {
+/** The parachute, in the fox's own coordinates: canopy overhead, lines meeting at its back. */
+private fun DrawScope.drawChute(s: Float, alpha: Float) {
+    fun p(x: Float, y: Float) = Offset(x * s, y * s)
+    val hem = listOf(-80f, -48f, -16f, 16f, 48f, 80f)
+    for (x in hem) drawLine(Color.White.copy(alpha = 0.6f * alpha), p(x, -130f), p(0f, -22f), 1.5f * s)
+    val canopy = Path().apply {
+        moveTo(-80f * s, -130f * s)
+        cubicTo(-80f * s, -215f * s, 80f * s, -215f * s, 80f * s, -130f * s)
+        for (i in hem.size - 2 downTo 0) quadraticTo((hem[i] + 16f) * s, -144f * s, hem[i] * s, -130f * s)
+        close()
+    }
+    drawPath(canopy, Orange.copy(alpha = alpha))
+    // Two cream panels, each running from the top of the dome down to its own scallop.
+    for (x in listOf(-48f, 16f)) {
+        val panel = Path().apply {
+            moveTo(0f, -194f * s)
+            quadraticTo(x * 1.1f * s, -190f * s, x * s, -130f * s)
+            quadraticTo((x + 16f) * s, -144f * s, (x + 32f) * s, -130f * s)
+            quadraticTo((x + 32f) * 1.1f * s, -190f * s, 0f, -194f * s)
+            close()
+        }
+        drawPath(panel, Cream.copy(alpha = alpha))
+    }
+}
+
+/** A side-on fox facing right, origin at the middle of its body. [swingAmp] is how far the legs swing, in degrees. */
+private fun DrawScope.drawFox(s: Float, phase: Float, swingAmp: Float = 38f) {
     fun p(x: Float, y: Float) = Offset(x * s, y * s)
 
     // Legs: the far pair first so the body covers their tops. Diagonal pairs move together (a trot).
@@ -103,7 +163,7 @@ private fun DrawScope.drawFox(s: Float, phase: Float) {
             drawLine(Sock, p(hipX, hipY + 22f), p(hipX, hipY + 38f), 8f * s, StrokeCap.Round)
         }
     }
-    val swing = sin(phase) * 38f
+    val swing = sin(phase) * swingAmp
     leg(-26f, 6f, swing, far = true)
     leg(28f, 6f, -swing, far = true)
 
