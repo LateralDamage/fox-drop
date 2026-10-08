@@ -613,7 +613,7 @@ function renderWishlist() {
   </div>`;
 }
 
-const SPRITE_COLORS = { base: 'var(--sky)', gold: '#E8C02A', cheat: '#B57BFF', loot: '#4CD18A', bounty: '#FF6B6B' };
+const SPRITE_COLORS = { base: 'var(--sky)', gold: '#E8C02A', cheat: '#B57BFF', loot: '#4CD18A', bounty: '#FF6B6B', treat: '#FF8A3D' };
 
 function renderSprites() {
   const load = state.sprites;

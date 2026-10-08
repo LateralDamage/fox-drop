@@ -1,22 +1,25 @@
 {
   "season": "Chapter 7 Season 4: Override",
-  "updated": "2026-09-25",
+  "updated": "2026-10-08",
   "credit": "Sprite pictures via spritechecklist.org. Sprites are made by Epic Games.",
   "variants": [
     { "id": "base", "name": "Base" },
     { "id": "gold", "name": "Gold" },
     { "id": "cheat", "name": "Cheat Master" },
     { "id": "loot", "name": "Loot Hacker" },
-    { "id": "bounty", "name": "Bounty Hunter", "note": "Levels up only from eliminations" }
+    { "id": "bounty", "name": "Bounty Hunter", "note": "Levels up only from eliminations" },
+    { "id": "treat", "name": "Trick or Treat", "note": "Fortnitemares variant with a chance to spawn candy when you open containers" }
   ],
   "sprites": [
     { "id": "8bit", "name": "8-Bit", "img": "sprites/8bit.webp", "ability": "Puts an 8-Bit Shotgun in your first chest.", "where": "High, mountainous areas" },
     { "id": "adventure", "name": "Adventure", "img": "sprites/adventure.webp", "ability": "Upgrades a random item in your inventory each level.", "where": "High, mountainous areas" },
-    { "id": "birthday", "name": "Birthday", "img": "sprites/birthday.webp", "ability": "Opening a chest can drop a Cake slice that heals Health and Shield. The chance grows each level, and at max level eliminations can drop Cake too.", "where": "From Sep 26, 2 PM ET. Extra spawns during the two Birthday Power Hours that day (2-5 PM and 9 PM-midnight ET)" },
+    { "id": "birthday", "name": "Birthday", "img": "sprites/birthday.webp", "ability": "Opening a chest can drop a Cake slice that heals Health and Shield. The chance grows each level, and at max level eliminations can drop Cake too.", "where": "High, mountainous areas" },
     { "id": "blinky", "name": "Blinky", "img": "sprites/blinky.webp", "ability": "Cloaks you for a short time after you take damage.", "where": "At night" },
     { "id": "bush", "name": "Bush", "img": "sprites/bush.webp", "ability": "Gives you a Bush after a while. At max level, a Bush on every elimination.", "where": "All over the island" },
     { "id": "crash", "name": "Crash Bandicoot", "img": "sprites/crash.webp", "ability": "Spin attack that damages nearby opponents.", "where": "High, mountainous areas" },
     { "id": "crown", "name": "Crown", "img": "sprites/crown.webp", "ability": "Extra Crown Wins after a Victory Royale. Only levels up by winning.", "where": "High, mountainous areas" },
+    { "id": "deer", "name": "The Deer", "img": "sprites/deer.webp", "ability": "Increases your melee damage.", "where": "Pumpkin Chests and other chests (Fortnitemares)", "added": "2026-10-01" },
+    { "id": "dumpsterdive", "name": "Dumpster Dive", "img": "sprites/dumpsterdive.webp", "ability": "Food heals you more, and you get food when you leave a hiding spot. The food gets better each level.", "where": "Pumpkin Chests and other chests (Fortnitemares)", "added": "2026-10-01" },
     { "id": "jackrabbit", "name": "Jackrabbit", "img": "sprites/jackrabbit.webp", "ability": "Adds another jump while you're in the air.", "where": "High, mountainous areas" },
     { "id": "jonesy", "name": "Jonesy", "img": "sprites/jonesy.webp", "ability": "Recovers some Health or Shield a moment after you're hit.", "where": "High, mountainous areas" },
     { "id": "killswitch", "name": "Killswitch", "img": "sprites/killswitch.webp", "ability": "Hangtime with better aim when you're in the air.", "where": "At night" },
@@ -28,8 +31,10 @@
     { "id": "pond", "name": "Pond", "img": "sprites/pond.webp", "ability": "Super Jump if you jump right after landing.", "where": "All over the island" },
     { "id": "shadow", "name": "Shadow", "img": "sprites/shadow.webp", "ability": "Reloads your other weapons while they're put away.", "where": "High, mountainous areas" },
     { "id": "sonic", "name": "Sonic", "img": "sprites/sonic.webp", "ability": "Gotta go fast: sprint faster.", "where": "High, mountainous areas" },
+    { "id": "spookydash", "name": "Spooky Dash", "img": "sprites/spookydash.webp", "ability": "Jump in midair to dash, even through some objects. Charges refill faster each level.", "where": "Pumpkin Chests and other chests (Fortnitemares)", "added": "2026-10-01" },
     { "id": "stormscout", "name": "Storm Scout", "img": "sprites/stormscout.webp", "ability": "Overdrive, and shows where the next Storm circles will be.", "where": "High areas, chests and Cheat Code consoles" },
     { "id": "tails", "name": "Tails", "img": "sprites/tails.webp", "ability": "Hover with help from Tails.", "where": "High, mountainous areas" },
+    { "id": "vampire", "name": "Vampire", "img": "sprites/vampire.webp", "ability": "Heals you as you damage enemies, more at higher levels.", "where": "Pumpkin Chests and other chests (Fortnitemares)", "added": "2026-10-01" },
     { "id": "xray", "name": "X-Ray", "img": "sprites/xray.webp", "ability": "Marks enemies around you every so often.", "where": "All over the island" }
   ]
 }

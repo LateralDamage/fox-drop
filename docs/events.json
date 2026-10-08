@@ -1,28 +1,35 @@
 {
   "_help": "Fox Drop live events. Use \"start\" (UTC, e.g. 2026-10-31T18:00:00Z) when the time is known, or \"date\" (YYYY-MM-DD) when only the day is. Add \"end\" (UTC) for something that lasts, like a Power Hour: it stays live and counts down to the end, with a 15-minutes-left alert. Each id must be unique; changing an event's time sends a 'new time' alert. Past events drop off by themselves.",
-  "updated": "2026-09-26",
+  "updated": "2026-10-08",
   "events": [
+    {
+      "id": "power-hour-2026-10-10a",
+      "title": "Fortnitemares Power Hour #1",
+      "start": "2026-10-10T18:00:00Z",
+      "note": "Runs 2-4 PM ET. Epic hasn't said yet which Sprites are boosted; check the in-game news.",
+      "link": "https://beebom.com/fortnite-sprite-events-schedule/",
+      "end": "2026-10-10T20:00:00Z"
+    },
+    {
+      "id": "power-hour-2026-10-10b",
+      "title": "Fortnitemares Power Hour #2",
+      "start": "2026-10-11T01:00:00Z",
+      "note": "Runs 9-11 PM ET. Epic hasn't said yet which Sprites are boosted; check the in-game news.",
+      "link": "https://beebom.com/fortnite-sprite-events-schedule/",
+      "end": "2026-10-11T03:00:00Z"
+    },
+    {
+      "id": "new-sprites-2026-10-15",
+      "title": "New Sprites: Honey and Obsession",
+      "start": "2026-10-15T13:00:00Z",
+      "note": "9 AM ET. Honey sends bees after enemies who damage you. Obsession uses One Wish Willow to help you collect other Sprites.",
+      "link": "https://www.theclick.gg/fortnitemares-2026/"
+    },
     {
       "id": "c7s4-end",
       "title": "Chapter 7 Season 4 ends",
       "date": "2026-10-31",
       "note": "Date from the Fortnite Wiki. Epic hasn't announced the time or a finale event yet."
-    },
-    {
-      "id": "power-hour-2026-09-26a",
-      "title": "Birthday Power Hour #1",
-      "start": "2026-09-26T18:00:00Z",
-      "note": "Runs 2-5 PM ET. Everyone drops with Presents, the Exotic Balloon Popper AR is in the wild, the Birthday Sprites (all 5 variants) arrive, and chests can drop 1-Up Tokens and Portable Extractors.",
-      "link": "https://www.vice.com/en/article/fortnite-power-hour-today-start-time-birthday-sprites/",
-      "end": "2026-09-26T21:00:00Z"
-    },
-    {
-      "id": "power-hour-2026-09-26b",
-      "title": "Birthday Power Hour #2",
-      "start": "2026-09-27T01:00:00Z",
-      "note": "Runs 9 PM-midnight ET. Everyone drops with Presents, the Exotic Balloon Popper AR is in the wild, the Birthday Sprites (all 5 variants) arrive, and chests can drop 1-Up Tokens and Portable Extractors.",
-      "link": "https://www.vice.com/en/article/fortnite-power-hour-today-start-time-birthday-sprites/",
-      "end": "2026-09-27T04:00:00Z"
     }
   ]
 }

@@ -49,6 +49,7 @@ private fun variantColor(id: String) = when (id) {
     "cheat" -> Color(0xFFB57BFF)
     "loot" -> Color(0xFF4CD18A)
     "bounty" -> Color(0xFFFF6B6B)
+    "treat" -> Color(0xFFFF8A3D)
     else -> Sky
 }
 
