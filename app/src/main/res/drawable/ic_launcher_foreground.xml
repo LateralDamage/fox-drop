@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A fox head, facing front. 108dp canvas, art inside the 66dp safe zone. -->
+<!-- A fox head, facing front, in a straw hat and an eye patch. 108dp canvas, art inside the 66dp safe zone. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp" android:height="108dp"
     android:viewportWidth="108" android:viewportHeight="108">
@@ -13,11 +13,20 @@
     <!-- white cheeks -->
     <path android:fillColor="#FFFFF4E6" android:pathData="M24,54 C34,54 44,58 50,66 L54,84 Z" />
     <path android:fillColor="#FFFFF4E6" android:pathData="M84,54 C74,54 64,58 58,66 L54,84 Z" />
-    <!-- eyes -->
+    <!-- eyes: the right one is under the eye patch -->
     <path android:fillColor="#FF1B1B1B" android:pathData="M42,52 m-3.5,0 a3.5,3.5 0,1 1,7 0 a3.5,3.5 0,1 1,-7 0" />
-    <path android:fillColor="#FF1B1B1B" android:pathData="M66,52 m-3.5,0 a3.5,3.5 0,1 1,7 0 a3.5,3.5 0,1 1,-7 0" />
     <path android:fillColor="#FFFFFFFF" android:pathData="M43.2,50.8 m-1.2,0 a1.2,1.2 0,1 1,2.4 0 a1.2,1.2 0,1 1,-2.4 0" />
-    <path android:fillColor="#FFFFFFFF" android:pathData="M67.2,50.8 m-1.2,0 a1.2,1.2 0,1 1,2.4 0 a1.2,1.2 0,1 1,-2.4 0" />
     <!-- nose -->
     <path android:fillColor="#FF1B1B1B" android:pathData="M49,78 L59,78 L54,85 Z" />
+    <!-- eye patch, its strap running up over the head -->
+    <path android:strokeColor="#FF1B1B1B" android:strokeWidth="1.8" android:strokeLineCap="round" android:pathData="M38,41 L76,55" />
+    <path android:fillColor="#FF1B1B1B" android:pathData="M60,50.5 C60,46 72,46 72,50.5 C72,57 66,59 66,59 C66,59 60,57 60,50.5 Z" />
+    <!-- straw hat, tipped a little, ear tips poking out either side of the crown -->
+    <group android:rotation="-6" android:pivotX="54" android:pivotY="36">
+        <path android:fillColor="#FFE8C25A" android:pathData="M38,36 C38,20 70,20 70,36 Z" />
+        <path android:fillColor="#FFD62828" android:pathData="M38.4,33 C46,35 62,35 69.6,33 L70,36 L38,36 Z" />
+        <path android:fillColor="#FFE8C25A" android:pathData="M26,37 a28,5.6 0 1,0 56,0 a28,5.6 0 1,0 -56,0 Z" />
+        <path android:strokeColor="#FFB8902F" android:strokeWidth="1" android:pathData="M26.5,37 a27.5,5.1 0 1,0 55,0 a27.5,5.1 0 1,0 -55,0 Z" />
+        <path android:strokeColor="#FFC9A040" android:strokeWidth="0.8" android:pathData="M44,24.5 C47,30 47,32 46,36 M54,22 L54,33 M64,24.5 C61,30 61,32 62,36" />
+    </group>
 </vector>

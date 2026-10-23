@@ -4,6 +4,9 @@ import android.content.Context
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.json.JSONObject
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 
 /** A cosmetic Kollin wants; the name and picture are kept so the list shows without a network call. */
 data class Wish(val id: String, val name: String, val type: String, val image: String?)
@@ -32,6 +35,22 @@ class Prefs(context: Context) {
     /** Events Kollin typed in himself. */
     val myEvents: StateFlow<List<LiveEvent>> = _myEvents
     val wishes: StateFlow<List<Wish>> = _wishes
+
+    /**
+     * The pirate-season opening fox runs from pirateFrom until pirateUntil (config.json; a UTC instant
+     * like 2026-11-01T08:00:00Z, or a plain date meaning local midnight). Kept here so it works on the
+     * first open of the season, before config.json has loaded, and offline.
+     */
+    fun setPirateSeason(from: String, until: String) = sp.edit().putString("pirate_from", from).putString("pirate_until", until).apply()
+    fun pirateNow(now: Long = System.currentTimeMillis()): Boolean {
+        val from = moment(sp.getString("pirate_from", "").orEmpty()) ?: return false
+        val until = moment(sp.getString("pirate_until", "").orEmpty())
+        return now >= from && (until == null || now < until)
+    }
+    private fun moment(s: String): Long? = if (s.isBlank()) null else
+        runCatching { Instant.parse(s).toEpochMilli() }
+            .recoverCatching { LocalDate.parse(s).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli() }
+            .getOrNull()
 
     fun enabled(kind: AlertKind) = sp.getBoolean("alert_${kind.key}", true)
     fun setEnabled(kind: AlertKind, on: Boolean) = sp.edit().putBoolean("alert_${kind.key}", on).apply()

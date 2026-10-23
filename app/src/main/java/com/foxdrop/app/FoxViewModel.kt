@@ -83,7 +83,7 @@ class FoxViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { status = fetch(status) { api.status() } }
         viewModelScope.launch { refreshEvents() }
         viewModelScope.launch { refreshSprites() }
-        viewModelScope.launch { runCatching { api.appConfig() }.onSuccess { config = it } }
+        viewModelScope.launch { runCatching { api.appConfig() }.onSuccess { config = it; prefs.setPirateSeason(it.pirateFrom, it.pirateUntil) } }
     }
 
     private suspend fun refreshSprites() {

@@ -16,6 +16,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 
@@ -55,7 +56,7 @@ class MainActivity : ComponentActivity() {
                 }
                 Box {
                     FoxDropApp(vm, tab, onTab = { tab = it }, onTestFox = { foxRun = true })
-                    if (foxRun) RunningFoxOverlay(message = "Fox Drop!", onDone = { foxRun = false })
+                    if (foxRun) RunningFoxOverlay(message = "Fox Drop!", pirate = remember(foxRun) { vm.prefs.pirateNow() }, onDone = { foxRun = false })
                 }
             }
         }

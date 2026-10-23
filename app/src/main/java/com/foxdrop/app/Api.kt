@@ -60,8 +60,8 @@ data class Status(
     val allUp get() = services.all { it.status == "operational" }
 }
 
-/** Hosted settings; a blank [tipUrl] keeps the tip jar hidden. */
-data class AppConfig(val tipUrl: String, val tipNote: String)
+/** Hosted settings; a blank [tipUrl] keeps the tip jar hidden. [pirateFrom]/[pirateUntil] bound the pirate-season opening fox. */
+data class AppConfig(val tipUrl: String, val tipNote: String, val pirateFrom: String = "", val pirateUntil: String = "")
 
 /** One mode's totals; winRate is already a percentage (12.5 means 12.5%). */
 data class ModeStats(
@@ -226,12 +226,12 @@ class Api(private val http: OkHttpClient) {
         }
     }
 
-    /** docs/config.json: settings that change without an app release. Today only the tip jar link. */
+    /** docs/config.json: settings that change without an app release: the tip jar link and the pirate-season dates. */
     suspend fun appConfig(): AppConfig = withContext(Dispatchers.IO) {
         http.newCall(Request.Builder().url("https://lateraldamage.github.io/fox-drop/config.json?t=${System.currentTimeMillis() / 60000}").build()).execute().use { r ->
             if (!r.isSuccessful) error("HTTP ${r.code} from config.json")
             val o = JSONObject(r.body.string())
-            AppConfig(o.optString("tipUrl").trim(), o.optString("tipNote").trim())
+            AppConfig(o.optString("tipUrl").trim(), o.optString("tipNote").trim(), o.optString("pirateFrom").trim(), o.optString("pirateUntil").trim())
         }
     }
 
