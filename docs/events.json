@@ -1,29 +1,22 @@
 {
   "_help": "Fox Drop live events. Use \"start\" (UTC, e.g. 2026-10-31T18:00:00Z) when the time is known, or \"date\" (YYYY-MM-DD) when only the day is. Add \"end\" (UTC) for something that lasts, like a Power Hour: it stays live and counts down to the end, with a 15-minutes-left alert. Each id must be unique; changing an event's time sends a 'new time' alert. Past events drop off by themselves.",
-  "updated": "2026-10-08",
+  "updated": "2026-10-23",
   "events": [
     {
-      "id": "power-hour-2026-10-10a",
-      "title": "Fortnitemares Power Hour #1",
-      "start": "2026-10-10T18:00:00Z",
-      "note": "Runs 2-4 PM ET. Epic hasn't said yet which Sprites are boosted; check the in-game news.",
+      "id": "power-hour-2026-10-24a",
+      "title": "Power Hour #1: Community Sprites",
+      "start": "2026-10-24T18:00:00Z",
+      "note": "Runs 2-4 PM ET. Epic calls it Community Sprites but hasn't said which Sprites are boosted; check the in-game news.",
       "link": "https://beebom.com/fortnite-sprite-events-schedule/",
-      "end": "2026-10-10T20:00:00Z"
+      "end": "2026-10-24T20:00:00Z"
     },
     {
-      "id": "power-hour-2026-10-10b",
-      "title": "Fortnitemares Power Hour #2",
-      "start": "2026-10-11T01:00:00Z",
-      "note": "Runs 9-11 PM ET. Epic hasn't said yet which Sprites are boosted; check the in-game news.",
+      "id": "power-hour-2026-10-24b",
+      "title": "Power Hour #2",
+      "start": "2026-10-25T01:00:00Z",
+      "note": "Runs 9-11 PM ET. Listed by Beebom; Epic's own page only shows the afternoon session, so check the in-game news.",
       "link": "https://beebom.com/fortnite-sprite-events-schedule/",
-      "end": "2026-10-11T03:00:00Z"
-    },
-    {
-      "id": "new-sprites-2026-10-15",
-      "title": "New Sprites: Honey and Obsession",
-      "start": "2026-10-15T13:00:00Z",
-      "note": "9 AM ET. Honey sends bees after enemies who damage you. Obsession uses One Wish Willow to help you collect other Sprites.",
-      "link": "https://www.theclick.gg/fortnitemares-2026/"
+      "end": "2026-10-25T03:00:00Z"
     },
     {
       "id": "c7s4-end",
