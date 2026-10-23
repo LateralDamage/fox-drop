@@ -1,6 +1,6 @@
 {
   "season": "Chapter 7 Season 4: Override",
-  "updated": "2026-10-08",
+  "updated": "2026-10-23",
   "credit": "Sprite pictures via spritechecklist.org. Sprites are made by Epic Games.",
   "variants": [
     { "id": "base", "name": "Base" },
@@ -20,12 +20,14 @@
     { "id": "crown", "name": "Crown", "img": "sprites/crown.webp", "ability": "Extra Crown Wins after a Victory Royale. Only levels up by winning.", "where": "High, mountainous areas" },
     { "id": "deer", "name": "The Deer", "img": "sprites/deer.webp", "ability": "Increases your melee damage.", "where": "Pumpkin Chests and other chests (Fortnitemares)", "added": "2026-10-01" },
     { "id": "dumpsterdive", "name": "Dumpster Dive", "img": "sprites/dumpsterdive.webp", "ability": "Food heals you more, and you get food when you leave a hiding spot. The food gets better each level.", "where": "Pumpkin Chests and other chests (Fortnitemares)", "added": "2026-10-01" },
+    { "id": "honey", "name": "Honey", "img": "sprites/honey.webp", "ability": "When your ranged shots hit, bees can pop out where they land.", "where": "Chests (exactly where isn't published yet)", "added": "2026-10-15" },
     { "id": "jackrabbit", "name": "Jackrabbit", "img": "sprites/jackrabbit.webp", "ability": "Adds another jump while you're in the air.", "where": "High, mountainous areas" },
     { "id": "jonesy", "name": "Jonesy", "img": "sprites/jonesy.webp", "ability": "Recovers some Health or Shield a moment after you're hit.", "where": "High, mountainous areas" },
     { "id": "killswitch", "name": "Killswitch", "img": "sprites/killswitch.webp", "ability": "Hangtime with better aim when you're in the air.", "where": "At night" },
     { "id": "klombo", "name": "Klombo", "img": "sprites/klombo.webp", "ability": "Random items at each level.", "where": "High, mountainous areas (very rare)" },
     { "id": "megaman", "name": "Mega Man", "img": "sprites/megaman.webp", "ability": "Slip-and-slide movement.", "where": "High, mountainous areas", "variants": ["base"] },
     { "id": "morgana", "name": "Morgana", "img": "sprites/morgana.webp", "ability": "Makes healing items work better.", "where": "All over the island", "added": "2026-09-24" },
+    { "id": "onewishwillow", "name": "One Wish Willow", "img": "sprites/onewishwillow.webp", "ability": "Eliminate an enemy to take the Sprites they had equipped. Getting hit pushes nearby enemies away, but taking it off shows you on the map.", "where": "Chests (exactly where isn't published yet; from the Obsession movie collab)", "added": "2026-10-15" },
     { "id": "onigiri", "name": "Onigiri", "img": "sprites/onigiri.webp", "ability": "Overdrive after you eat or drink.", "where": "All over the island" },
     { "id": "overshield", "name": "Overshield", "img": "sprites/overshield.webp", "ability": "An Overshield that gets stronger as it levels.", "where": "High, mountainous areas" },
     { "id": "pond", "name": "Pond", "img": "sprites/pond.webp", "ability": "Super Jump if you jump right after landing.", "where": "All over the island" },
