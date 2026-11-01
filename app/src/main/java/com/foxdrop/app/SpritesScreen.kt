@@ -50,6 +50,8 @@ private fun variantColor(id: String) = when (id) {
     "loot" -> Color(0xFF4CD18A)
     "bounty" -> Color(0xFFFF6B6B)
     "treat" -> Color(0xFFFF8A3D)
+    "fortune" -> Color(0xFF2FD3B5)
+    "cursed" -> Color(0xFFD65DB1)
     else -> Sky
 }
 
@@ -98,8 +100,7 @@ fun SpritesScreen(vm: FoxViewModel) {
         items(shown, key = { it.id }) { s -> SpriteCard(s, variantNames, got, vm.prefs::toggleSprite) }
         item {
             Text(
-                "Tap a version when you've collected it. Sprites come from Cheat Code chests: find the injector and " +
-                    "punch in the arrows. " + list.variants.filter { it.note.isNotBlank() }.joinToString(" ") { "${it.name}: ${it.note.lowercase()}." } +
+                "Tap a version when you've collected it. " + list.variants.filter { it.note.isNotBlank() }.joinToString(" ") { "${it.name}: ${it.note.lowercase()}." } +
                     "\nList updated ${list.updated}." + (if (list.credit.isNotBlank()) " ${list.credit}" else ""),
                 fontSize = 12.sp, color = Faint, modifier = Modifier.padding(4.dp),
             )

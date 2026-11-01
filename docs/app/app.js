@@ -613,7 +613,7 @@ function renderWishlist() {
   </div>`;
 }
 
-const SPRITE_COLORS = { base: 'var(--sky)', gold: '#E8C02A', cheat: '#B57BFF', loot: '#4CD18A', bounty: '#FF6B6B', treat: '#FF8A3D' };
+const SPRITE_COLORS = { base: 'var(--sky)', gold: '#E8C02A', cheat: '#B57BFF', loot: '#4CD18A', bounty: '#FF6B6B', treat: '#FF8A3D', fortune: '#2FD3B5', cursed: '#D65DB1' };
 
 function renderSprites() {
   const load = state.sprites;
@@ -657,7 +657,7 @@ function renderSprites() {
         }).join('')}</div>
       </div>`;
     }).join('')}</div>
-    <p class="faint small">Click a version when you've collected it. Sprites come from buried Sprite Chests: tear down a Wanted Poster, follow the map and dig. ${esc(notes)} List updated ${esc(list.updated)}.${list.credit ? ' ' + esc(list.credit) : ''} Your checklist is saved in this browser only.</p>
+    <p class="faint small">Click a version when you've collected it. ${esc(notes)} List updated ${esc(list.updated)}.${list.credit ? ' ' + esc(list.credit) : ''} Your checklist is saved in this browser only.</p>
   </div>`;
 }
 
