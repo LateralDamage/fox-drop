@@ -87,13 +87,23 @@
       "name": "Lil' Flacko",
       "img": "sprites/lilflacko.png",
       "ability": "Landing makes a shockwave that knocks opponents back.",
-      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up"
+      "where": "Dropped by the A$AP Rocky boss on Crossbones Isle, or buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up"
     },
     {
       "id": "sweetdreams",
       "name": "Sweet Dreams",
       "img": "sprites/sweetdreams.png",
       "ability": "A random item each level-up, and Mythic loot at max level.",
+      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
+      "variants": [
+        "base"
+      ]
+    },
+    {
+      "id": "transpondersnail",
+      "name": "Transponder Snail",
+      "img": "sprites/transpondersnail.png",
+      "ability": "Extra resources when you pick them up, more each level. Teammates with this Sprite get some too.",
       "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
       "variants": [
         "base"
