@@ -657,7 +657,7 @@ function renderSprites() {
         }).join('')}</div>
       </div>`;
     }).join('')}</div>
-    <p class="faint small">Click a version when you've collected it. Sprites come from Cheat Code chests: find the injector and punch in the arrows. ${esc(notes)} List updated ${esc(list.updated)}.${list.credit ? ' ' + esc(list.credit) : ''} Your checklist is saved in this browser only.</p>
+    <p class="faint small">Click a version when you've collected it. Sprites come from buried Sprite Chests: tear down a Wanted Poster, follow the map and dig. ${esc(notes)} List updated ${esc(list.updated)}.${list.credit ? ' ' + esc(list.credit) : ''} Your checklist is saved in this browser only.</p>
   </div>`;
 }
 
