@@ -1,12 +1,5 @@
 {
   "_help": "Fox Drop live events. Use \"start\" (UTC, e.g. 2026-10-31T18:00:00Z) when the time is known, or \"date\" (YYYY-MM-DD) when only the day is. Add \"end\" (UTC) for something that lasts, like a Power Hour: it stays live and counts down to the end, with a 15-minutes-left alert. Each id must be unique; changing an event's time sends a 'new time' alert. Past events drop off by themselves.",
-  "updated": "2026-10-30",
-  "events": [
-    {
-      "id": "c7s4-end",
-      "title": "Chapter 7 Season 4 ends",
-      "date": "2026-10-31",
-      "note": "Date from the Fortnite Wiki. Epic hasn't announced the time or a finale event yet."
-    }
-  ]
+  "updated": "2026-11-06",
+  "events": []
 }
