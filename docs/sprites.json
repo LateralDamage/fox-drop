@@ -1,7 +1,7 @@
 {
   "season": "Chapter 7: Treasure Hunters",
-  "updated": "2026-11-06",
-  "credit": "Sprite pictures via spritecatch.com. Sprites are made by Epic Games.",
+  "updated": "2026-11-07",
+  "credit": "Sprite pictures via spritecatch.com and spritechecklist.org. Sprites are made by Epic Games.",
   "variants": [
     {
       "id": "base",
@@ -27,11 +27,9 @@
       "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
       "variants": [
         "base",
-        "fortune"
-      ],
-      "soon": {
-        "cursed": "2026-11-07"
-      }
+        "fortune",
+        "cursed"
+      ]
     },
     {
       "id": "repete",
@@ -41,11 +39,9 @@
       "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
       "variants": [
         "base",
-        "fortune"
-      ],
-      "soon": {
-        "cursed": "2026-11-07"
-      }
+        "fortune",
+        "cursed"
+      ]
     },
     {
       "id": "barryofish",
@@ -55,11 +51,9 @@
       "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
       "variants": [
         "base",
-        "fortune"
-      ],
-      "soon": {
-        "cursed": "2026-11-07"
-      }
+        "fortune",
+        "cursed"
+      ]
     },
     {
       "id": "exmarks",
@@ -69,11 +63,9 @@
       "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
       "variants": [
         "base",
-        "fortune"
-      ],
-      "soon": {
-        "cursed": "2026-11-07"
-      }
+        "fortune",
+        "cursed"
+      ]
     },
     {
       "id": "plundarrgh",
@@ -83,11 +75,9 @@
       "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
       "variants": [
         "base",
-        "fortune"
-      ],
-      "soon": {
-        "cursed": "2026-11-07"
-      }
+        "fortune",
+        "cursed"
+      ]
     },
     {
       "id": "chester",
@@ -97,11 +87,9 @@
       "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
       "variants": [
         "base",
-        "fortune"
-      ],
-      "soon": {
-        "cursed": "2026-11-07"
-      }
+        "fortune",
+        "cursed"
+      ]
     },
     {
       "id": "wayfinder",
@@ -111,11 +99,9 @@
       "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
       "variants": [
         "base",
-        "fortune"
-      ],
-      "soon": {
-        "cursed": "2026-11-07"
-      }
+        "fortune",
+        "cursed"
+      ]
     },
     {
       "id": "kelper",
@@ -125,11 +111,9 @@
       "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
       "variants": [
         "base",
-        "fortune"
-      ],
-      "soon": {
-        "cursed": "2026-11-07"
-      }
+        "fortune",
+        "cursed"
+      ]
     },
     {
       "id": "lilsquibbly",
@@ -139,11 +123,9 @@
       "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
       "variants": [
         "base",
-        "fortune"
-      ],
-      "soon": {
-        "cursed": "2026-11-07"
-      }
+        "fortune",
+        "cursed"
+      ]
     },
     {
       "id": "lilflacko",
@@ -153,11 +135,9 @@
       "where": "Dropped by the A$AP Rocky boss on Crossbones Isle, or buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
       "variants": [
         "base",
-        "fortune"
-      ],
-      "soon": {
-        "cursed": "2026-11-07"
-      }
+        "fortune",
+        "cursed"
+      ]
     },
     {
       "id": "sweetdreams",
@@ -184,9 +164,9 @@
     {
       "id": "liluzivertjr",
       "name": "Lil' Uzi Vert Jr.",
-      "img": "",
-      "ability": "",
-      "where": "Expected from the Lil Uzi Vert Captain's Day boss",
+      "img": "sprites/liluzivertjr.webp",
+      "ability": "Creates a Chug Splash when you restore shields. The cooldown gets shorter each level.",
+      "where": "Expected with Lil Uzi Vert on Nov 7 (Epic has not said how it drops yet)",
       "soon": {
         "base": "2026-11-07",
         "fortune": "2026-11-07",
