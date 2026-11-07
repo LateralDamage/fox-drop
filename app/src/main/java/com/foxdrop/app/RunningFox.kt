@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.translate
@@ -408,7 +409,7 @@ private fun DrawScope.drawMangaOpening(ms: Float, t: Float, s: Float, ground: Fl
     // Sound effects and the title sit on top of the shake so they stay readable.
     if (impact >= 0f && sail < 320f) {
         val fade = if (sail > 0f) 1f - sail / 320f else 1f
-        sfx(tm, "ドン!!", Offset(w * 0.5f, h * 0.27f), 104f * s, -10f, pop((impact / 170f).coerceAtMost(1f)), Gold, Ink, alpha = fade, halo = true)
+        sfx(tm, "ドン!!", Offset(w * 0.48f, h * 0.27f), 92f * s, -10f, pop((impact / 170f).coerceAtMost(1f)), Gold, Ink, alpha = fade, halo = true)
     }
     if (sail >= 0f) {
         sfx(tm, "FOX DROP!", Offset(w * 0.5f, h * 0.17f), 60f * s, -6f, pop((sail / 230f).coerceAtMost(1f)), Orange, Ink, halo = true)
@@ -445,7 +446,7 @@ private fun rnd(i: Int): Float {
 private fun jitter(seed: Int, amp: Float) = Offset((rnd(seed * 2) - 0.5f) * 2f * amp, (rnd(seed * 2 + 1) - 0.5f) * 2f * amp)
 
 /** Overshoot for a slammed-in word: starts big, punches past 1, settles. [k] runs 0..1. */
-private fun pop(k: Float) = if (k >= 1f) 1f else 1f + 1.9f * (1f - k) * (1f - k) * (1f - k) - 0.14f * sin(k * PI.toFloat())
+private fun pop(k: Float) = if (k >= 1f) 1f else 1f + 1.4f * (1f - k) * (1f - k) * (1f - k) - 0.14f * sin(k * PI.toFloat())
 
 /** Thin wedges converging on [c], starting a jittered [inner] radius out; [seed] reshuffles them. */
 private fun DrawScope.radialLines(c: Offset, inner: Float, count: Int, seed: Int, color: Color) {
@@ -532,9 +533,9 @@ private fun DrawScope.sparkle(c: Offset, r: Float, deg: Float) {
 /** White foam line along the top of a [drawWave] band. */
 private fun DrawScope.drawFoam(s: Float, y: Float, phase: Float, amp: Float) {
     val path = Path().apply {
-        var x = 0f
-        moveTo(0f, y + sin(phase) * amp * s)
-        while (x <= size.width + 8f) {
+        var x = -40f * s
+        moveTo(x, y + sin(x / (38f * s) + phase) * amp * s)
+        while (x <= size.width + 40f * s) {
             lineTo(x, y + sin(x / (38f * s) + phase) * amp * s)
             x += 8f
         }
@@ -551,12 +552,16 @@ private fun DrawScope.sfx(
     fill: Color, ink: Color, alpha: Float = 1f, halo: Boolean = false,
 ) {
     if (alpha <= 0f) return
-    val layout = tm.measure(text, TextStyle(fontSize = px.toSp(), fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic, letterSpacing = 1.sp))
-    val topLeft = c - Offset(layout.size.width / 2f, layout.size.height / 2f)
+    // Each layer gets its own layout with the stroke in its TextStyle: passing drawStyle to drawText on a
+    // shared layout only ever drew the first stroke (seen on the Fold), so the ink edge went missing.
+    val base = TextStyle(fontSize = px.toSp(), fontWeight = FontWeight.Black, fontStyle = FontStyle.Italic, letterSpacing = 1.sp)
+    fun layer(color: Color, stroke: Float) =
+        tm.measure(text, base.copy(color = color, drawStyle = if (stroke > 0f) Stroke(stroke, join = StrokeJoin.Round) else Fill))
+    val layers = listOfNotNull(if (halo) layer(Color.White, px * 0.34f) else null, layer(ink, px * 0.17f), layer(fill, 0f))
+    val size0 = layers.last().size
+    val topLeft = c - Offset(size0.width / 2f, size0.height / 2f)
     withTransform({ rotate(deg, c); scale(scale, scale, c) }) {
-        if (halo) drawText(layout, Color.White, topLeft, alpha = alpha, drawStyle = Stroke(px * 0.34f, join = StrokeJoin.Round))
-        drawText(layout, ink, topLeft, alpha = alpha, drawStyle = Stroke(px * 0.17f, join = StrokeJoin.Round))
-        drawText(layout, fill, topLeft, alpha = alpha)
+        for (l in layers) drawText(l, topLeft = topLeft, alpha = alpha)
     }
 }
 
@@ -570,14 +575,15 @@ private fun DrawScope.faded(alpha: Float, block: DrawScope.() -> Unit) {
 
 /** A band of sea from [y] down to the bottom of the screen, its top edge a rolling sine. */
 private fun DrawScope.drawWave(s: Float, y: Float, phase: Float, amp: Float, color: Color) {
+    val edge = 40f * s // past the screen edges, so the impact shake never shows a gap
     val path = Path().apply {
-        moveTo(0f, size.height)
-        var x = 0f
-        while (x <= size.width + 8f) {
+        moveTo(-edge, size.height + edge)
+        var x = -edge
+        while (x <= size.width + edge) {
             lineTo(x, y + sin(x / (38f * s) + phase) * amp * s)
             x += 8f
         }
-        lineTo(size.width, size.height)
+        lineTo(size.width + edge, size.height + edge)
         close()
     }
     drawPath(path, color)
