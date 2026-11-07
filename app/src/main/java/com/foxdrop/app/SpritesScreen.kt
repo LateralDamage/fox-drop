@@ -118,7 +118,8 @@ private fun Toggle(label: String, on: Boolean, onClick: () -> Unit) {
 @Composable
 private fun SpriteCard(s: Sprite, names: Map<String, SpriteVariant>, got: Set<String>, onToggle: (String) -> Unit) {
     val count = s.variants.count { "${s.id}:$it" in got }
-    val done = count == s.variants.size
+    val done = s.variants.isNotEmpty() && count == s.variants.size
+    val comingSoon = s.variants.isEmpty() && s.locked.isNotEmpty()
     Card(
         colors = CardDefaults.cardColors(containerColor = Panel),
         border = if (done) BorderStroke(2.dp, Color(0xFFE8C02A)) else null,
@@ -134,7 +135,10 @@ private fun SpriteCard(s: Sprite, names: Map<String, SpriteVariant>, got: Set<St
                 Column(Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(s.name, fontWeight = FontWeight.Black, fontSize = 18.sp, modifier = Modifier.weight(1f))
-                        Text(if (done) "🏆 all ${s.variants.size}" else "$count / ${s.variants.size}", color = if (done) Color(0xFFE8C02A) else Faint, fontWeight = FontWeight.Bold)
+                        Text(
+                            when { comingSoon -> "🔒 ${s.locked.values.first()}"; done -> "🏆 all ${s.variants.size}"; else -> "$count / ${s.variants.size}" },
+                            color = if (done) Color(0xFFE8C02A) else Faint, fontWeight = FontWeight.Bold,
+                        )
                     }
                     if (s.ability.isNotBlank()) Text(s.ability, fontSize = 14.sp)
                     if (s.where.isNotBlank()) Text("📍 ${s.where}", fontSize = 13.sp, color = Faint)
@@ -155,6 +159,18 @@ private fun SpriteCard(s: Sprite, names: Map<String, SpriteVariant>, got: Set<St
                             .background(if (have) c else Color.Transparent)
                             .border(2.dp, c, RoundedCornerShape(50))
                             .clickable { onToggle(key) }
+                            .padding(horizontal = 12.dp, vertical = 7.dp),
+                    )
+                }
+                // Not out yet: dimmed, not tappable, with the release day.
+                s.locked.forEach { (v, day) ->
+                    val c = variantColor(v).copy(alpha = 0.45f)
+                    Text(
+                        "🔒 ${names[v]?.name ?: v} · $day",
+                        fontSize = 13.sp, fontWeight = FontWeight.Bold, color = c,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(50))
+                            .border(2.dp, c, RoundedCornerShape(50))
                             .padding(horizontal = 12.dp, vertical = 7.dp),
                     )
                 }

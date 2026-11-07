@@ -256,9 +256,25 @@ async function loadSprites() {
   const j = await r.json();
   const all = j.variants.map((v) => v.id);
   // "img" is relative to sprites.json (the pictures sit next to it on the Pages site)
-  const list = { ...j, sprites: j.sprites.map((s) => ({ ...s, variants: s.variants || all, img: s.img ? new URL(s.img, SPRITES_URL).href : '' })) };
+  // "upcoming" holds whole Sprites that aren't out yet (older app versions ignore it)
+  const list = { ...j, sprites: [...j.sprites.map((s) => ({ ...s, variants: s.variants || all })), ...(j.upcoming || []).map((s) => ({ ...s, variants: s.variants || [] }))]
+    .map((s) => ({ ...s, img: s.img ? new URL(s.img, SPRITES_URL).href : '' })) };
   save('spriteList', list);
   return list;
+}
+
+// "soon" maps a variant to its release date (a plain date is local midnight). Worked out at render time so it
+// unlocks on the day without a reload; "variants" lists only what's out, for app versions that predate "soon".
+function releaseAt(d) { return /^\d{4}-\d{2}-\d{2}$/.test(d) ? new Date(d + 'T00:00:00').getTime() : Date.parse(d); }
+function spriteForms(s, order) {
+  const now = Date.now();
+  const soon = Object.entries(s.soon || {});
+  const open = soon.filter(([, d]) => !(releaseAt(d) > now)).map(([v]) => v);
+  const rank = (v) => (order.indexOf(v) + 1 || 99);
+  const variants = [...new Set([...s.variants, ...open])].sort((a, b) => rank(a) - rank(b));
+  const locked = soon.filter(([v]) => !open.includes(v)).sort(([a], [b]) => rank(a) - rank(b))
+    .map(([v, d]) => [v, new Date(releaseAt(d)).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })]);
+  return { ...s, variants, locked };
 }
 
 function toggleSprite(key) {
@@ -617,9 +633,11 @@ const SPRITE_COLORS = { base: 'var(--sky)', gold: '#E8C02A', cheat: '#B57BFF', l
 
 function renderSprites() {
   const load = state.sprites;
-  const list = load.value;
+  let list = load.value;
   if (!list) return `<div class="wrap">${problem(load.error)}${load.loading ? spinner : ''}</div>`;
   const got = state.spritesGot;
+  const order = list.variants.map((v) => v.id);
+  list = { ...list, sprites: list.sprites.map((s) => spriteForms(s, order)) };
   const keys = list.sprites.flatMap((s) => s.variants.map((v) => `${s.id}:${v}`));
   const have = keys.filter((k) => got.has(k)).length;
   const names = Object.fromEntries(list.variants.map((v) => [v.id, v.name]));
@@ -640,12 +658,13 @@ function renderSprites() {
     ${shown.length ? '' : '<p style="padding:16px"><b>You\'ve collected every Sprite this season! 🦊🏆</b></p>'}
     <div class="sprite-grid">${shown.map((s) => {
       const n = s.variants.filter((v) => got.has(`${s.id}:${v}`)).length;
-      const done = n === s.variants.length;
+      const done = s.variants.length > 0 && n === s.variants.length;
+      const comingSoon = !s.variants.length && s.locked.length;
       return `<div class="card sprite${done ? ' done' : ''}">
         <div class="row" style="align-items:flex-start;gap:10px">
           ${s.img ? `<img class="sprite-pic" src="${esc(s.img)}" alt="${esc(s.name)} Sprite" width="64" height="64" loading="lazy">` : ''}
           <div class="grow">
-            <div class="row"><b class="grow" style="font-size:18px">${esc(s.name)}</b><b style="color:${done ? '#E8C02A' : 'var(--faint)'}">${done ? '🏆 all ' + s.variants.length : n + ' / ' + s.variants.length}</b></div>
+            <div class="row"><b class="grow" style="font-size:18px">${esc(s.name)}</b><b style="color:${done ? '#E8C02A' : 'var(--faint)'}">${comingSoon ? '🔒 ' + esc(s.locked[0][1]) : done ? '🏆 all ' + s.variants.length : n + ' / ' + s.variants.length}</b></div>
             ${s.ability ? `<div>${esc(s.ability)}</div>` : ''}
             ${s.where ? `<div class="faint small">📍 ${esc(s.where)}</div>` : ''}
           </div>
@@ -654,7 +673,7 @@ function renderSprites() {
           const key = `${s.id}:${v}`;
           const on = got.has(key);
           return `<button class="chip${on ? ' on' : ''}" style="--c:${SPRITE_COLORS[v] || 'var(--sky)'}" data-sprite="${esc(key)}" aria-pressed="${on}">${on ? '✓ ' : ''}${esc(names[v] || v)}</button>`;
-        }).join('')}</div>
+        }).join('')}${s.locked.map(([v, day]) => `<span class="chip locked" style="--c:${SPRITE_COLORS[v] || 'var(--sky)'}" title="Not out yet">🔒 ${esc(names[v] || v)} · ${esc(day)}</span>`).join('')}</div>
       </div>`;
     }).join('')}</div>
     <p class="faint small">Click a version when you've collected it. ${esc(notes)} List updated ${esc(list.updated)}.${list.credit ? ' ' + esc(list.credit) : ''} Your checklist is saved in this browser only.</p>

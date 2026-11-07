@@ -156,6 +156,7 @@ dialog .scroll { max-height: 300px; overflow-y: auto; display: flex; flex-direct
 .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .chip { border: 2px solid var(--c); color: var(--c); background: none; border-radius: 999px; padding: 6px 12px; font-weight: 700; font-size: 13px; }
 .chip.on { background: var(--c); color: #120B2E; }
+.chip.locked { opacity: .5; border-style: dashed; cursor: default; }
 
 /* Island map dialog */
 dialog.map-dialog { width: min(1000px, calc(100vw - 32px)); }

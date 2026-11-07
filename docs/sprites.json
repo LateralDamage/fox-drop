@@ -1,6 +1,6 @@
 {
   "season": "Chapter 7: Treasure Hunters",
-  "updated": "2026-11-01",
+  "updated": "2026-11-06",
   "credit": "Sprite pictures via spritecatch.com. Sprites are made by Epic Games.",
   "variants": [
     {
@@ -24,70 +24,140 @@
       "name": "Halfpeel'd",
       "img": "sprites/halfpeeld.png",
       "ability": "Marks eliminations on the map. The range grows each level.",
-      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up"
+      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
+      "variants": [
+        "base",
+        "fortune"
+      ],
+      "soon": {
+        "cursed": "2026-11-07"
+      }
     },
     {
       "id": "repete",
       "name": "Re-Pete",
       "img": "sprites/repete.png",
       "ability": "Faster reloads, with a chance to get ammo back.",
-      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up"
+      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
+      "variants": [
+        "base",
+        "fortune"
+      ],
+      "soon": {
+        "cursed": "2026-11-07"
+      }
     },
     {
       "id": "barryofish",
       "name": "Barry O'Fish",
       "img": "sprites/barryofish.png",
       "ability": "Uses less stamina sprinting in water. Adds a Slap effect at max level.",
-      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up"
+      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
+      "variants": [
+        "base",
+        "fortune"
+      ],
+      "soon": {
+        "cursed": "2026-11-07"
+      }
     },
     {
       "id": "exmarks",
       "name": "Exmarks",
       "img": "sprites/exmarks.png",
       "ability": "Shows nearby Treasure Maps and Wanted Posters. Spawns a Treasure Map at max level.",
-      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up"
+      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
+      "variants": [
+        "base",
+        "fortune"
+      ],
+      "soon": {
+        "cursed": "2026-11-07"
+      }
     },
     {
       "id": "plundarrgh",
       "name": "Plundarrgh",
       "img": "sprites/plundarrgh.png",
       "ability": "Opening chests boosts your Pickaxe and movement speed.",
-      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up"
+      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
+      "variants": [
+        "base",
+        "fortune"
+      ],
+      "soon": {
+        "cursed": "2026-11-07"
+      }
     },
     {
       "id": "chester",
       "name": "Chester",
       "img": "sprites/chester.png",
       "ability": "Chests may drop extra loot, and you take no fall damage.",
-      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up"
+      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
+      "variants": [
+        "base",
+        "fortune"
+      ],
+      "soon": {
+        "cursed": "2026-11-07"
+      }
     },
     {
       "id": "wayfinder",
       "name": "Wayfinder",
       "img": "sprites/wayfinder.png",
       "ability": "Shows nearby Sprites and adds extra loot to Buried Chests.",
-      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up"
+      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
+      "variants": [
+        "base",
+        "fortune"
+      ],
+      "soon": {
+        "cursed": "2026-11-07"
+      }
     },
     {
       "id": "kelper",
       "name": "Kelper",
       "img": "sprites/kelper.png",
       "ability": "Heals you over time in water, more each level.",
-      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up"
+      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
+      "variants": [
+        "base",
+        "fortune"
+      ],
+      "soon": {
+        "cursed": "2026-11-07"
+      }
     },
     {
       "id": "lilsquibbly",
       "name": "Lil' Squibbly",
       "img": "sprites/lilsquibbly.png",
       "ability": "Jump into fishing holes to catch fish and bonus loot.",
-      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up"
+      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
+      "variants": [
+        "base",
+        "fortune"
+      ],
+      "soon": {
+        "cursed": "2026-11-07"
+      }
     },
     {
       "id": "lilflacko",
       "name": "Lil' Flacko",
       "img": "sprites/lilflacko.png",
       "ability": "Landing makes a shockwave that knocks opponents back.",
-      "where": "Dropped by the A$AP Rocky boss on Crossbones Isle, or buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up"
+      "where": "Dropped by the A$AP Rocky boss on Crossbones Isle, or buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
+      "variants": [
+        "base",
+        "fortune"
+      ],
+      "soon": {
+        "cursed": "2026-11-07"
+      }
     },
     {
       "id": "sweetdreams",
@@ -108,6 +178,20 @@
       "variants": [
         "base"
       ]
+    }
+  ],
+  "upcoming": [
+    {
+      "id": "liluzivertjr",
+      "name": "Lil' Uzi Vert Jr.",
+      "img": "",
+      "ability": "",
+      "where": "Expected from the Lil Uzi Vert Captain's Day boss",
+      "soon": {
+        "base": "2026-11-07",
+        "fortune": "2026-11-07",
+        "cursed": "2026-11-07"
+      }
     }
   ]
 }
