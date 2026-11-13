@@ -1,6 +1,6 @@
 {
   "season": "Chapter 7: Treasure Hunters",
-  "updated": "2026-11-07",
+  "updated": "2026-11-13",
   "credit": "Sprite pictures via spritecatch.com and spritechecklist.org. Sprites are made by Epic Games.",
   "variants": [
     {
@@ -16,6 +16,11 @@
       "id": "cursed",
       "name": "Cursed",
       "note": "Better odds of rare Sprite variants, but water hurts you"
+    },
+    {
+      "id": "gold",
+      "name": "Gold",
+      "note": "Triple Sprite XP from eliminations"
     }
   ],
   "sprites": [
@@ -29,7 +34,10 @@
         "base",
         "fortune",
         "cursed"
-      ]
+      ],
+      "soon": {
+        "gold": "2026-11-22"
+      }
     },
     {
       "id": "repete",
@@ -41,7 +49,10 @@
         "base",
         "fortune",
         "cursed"
-      ]
+      ],
+      "soon": {
+        "gold": "2026-11-22"
+      }
     },
     {
       "id": "barryofish",
@@ -53,7 +64,10 @@
         "base",
         "fortune",
         "cursed"
-      ]
+      ],
+      "soon": {
+        "gold": "2026-11-22"
+      }
     },
     {
       "id": "exmarks",
@@ -65,7 +79,10 @@
         "base",
         "fortune",
         "cursed"
-      ]
+      ],
+      "soon": {
+        "gold": "2026-11-22"
+      }
     },
     {
       "id": "plundarrgh",
@@ -77,7 +94,10 @@
         "base",
         "fortune",
         "cursed"
-      ]
+      ],
+      "soon": {
+        "gold": "2026-11-22"
+      }
     },
     {
       "id": "chester",
@@ -89,7 +109,10 @@
         "base",
         "fortune",
         "cursed"
-      ]
+      ],
+      "soon": {
+        "gold": "2026-11-22"
+      }
     },
     {
       "id": "wayfinder",
@@ -101,7 +124,10 @@
         "base",
         "fortune",
         "cursed"
-      ]
+      ],
+      "soon": {
+        "gold": "2026-11-22"
+      }
     },
     {
       "id": "kelper",
@@ -113,7 +139,10 @@
         "base",
         "fortune",
         "cursed"
-      ]
+      ],
+      "soon": {
+        "gold": "2026-11-22"
+      }
     },
     {
       "id": "lilsquibbly",
@@ -125,7 +154,10 @@
         "base",
         "fortune",
         "cursed"
-      ]
+      ],
+      "soon": {
+        "gold": "2026-11-22"
+      }
     },
     {
       "id": "lilflacko",
@@ -137,7 +169,25 @@
         "base",
         "fortune",
         "cursed"
-      ]
+      ],
+      "soon": {
+        "gold": "2026-11-22"
+      }
+    },
+    {
+      "id": "liluzivertjr",
+      "name": "Lil' Uzi Vert Jr.",
+      "img": "sprites/liluzivertjr.webp",
+      "ability": "Creates a Chug Splash when you restore shields. The cooldown gets shorter each level.",
+      "where": "Dropped by the Lil Uzi Vert boss at his stronghold on Crossbones Isle, or buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
+      "variants": [
+        "base",
+        "fortune",
+        "cursed"
+      ],
+      "soon": {
+        "gold": "2026-11-22"
+      }
     },
     {
       "id": "sweetdreams",
@@ -160,18 +210,5 @@
       ]
     }
   ],
-  "upcoming": [
-    {
-      "id": "liluzivertjr",
-      "name": "Lil' Uzi Vert Jr.",
-      "img": "sprites/liluzivertjr.webp",
-      "ability": "Creates a Chug Splash when you restore shields. The cooldown gets shorter each level.",
-      "where": "Expected with Lil Uzi Vert on Nov 7 (Epic has not said how it drops yet)",
-      "soon": {
-        "base": "2026-11-07",
-        "fortune": "2026-11-07",
-        "cursed": "2026-11-07"
-      }
-    }
-  ]
+  "upcoming": []
 }
