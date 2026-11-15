@@ -1,6 +1,6 @@
 {
   "season": "Chapter 7: Treasure Hunters",
-  "updated": "2026-11-13",
+  "updated": "2026-11-15",
   "credit": "Sprite pictures via spritecatch.com and spritechecklist.org. Sprites are made by Epic Games.",
   "variants": [
     {
@@ -190,6 +190,36 @@
       }
     },
     {
+      "id": "minimiku",
+      "name": "Mini Miku",
+      "img": "sprites/minimiku.png",
+      "ability": "Gives you a Friendship Bubble when you emote with another player.",
+      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
+      "variants": [
+        "base",
+        "fortune",
+        "cursed"
+      ],
+      "soon": {
+        "gold": "2026-11-22"
+      }
+    },
+    {
+      "id": "squiplash",
+      "name": "Squiplash",
+      "img": "sprites/squiplash.png",
+      "ability": "Drops a Healing Smoke Bomb when your health gets low.",
+      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
+      "variants": [
+        "base",
+        "fortune",
+        "cursed"
+      ],
+      "soon": {
+        "gold": "2026-11-22"
+      }
+    },
+    {
       "id": "sweetdreams",
       "name": "Sweet Dreams",
       "img": "sprites/sweetdreams.png",
@@ -204,7 +234,17 @@
       "name": "Transponder Snail",
       "img": "sprites/transpondersnail.png",
       "ability": "Extra resources when you pick them up, more each level. Teammates with this Sprite get some too.",
-      "where": "Buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
+      "where": "Chance to drop from the Buggy boss at Buggy's Beachhead on Crossbones Isle, or buried Sprite Chests: tear down a Wanted Poster, follow the map, dig it up",
+      "variants": [
+        "base"
+      ]
+    },
+    {
+      "id": "zee",
+      "name": "Zee",
+      "img": "sprites/zee.png",
+      "ability": "Gives you Zero Point Dash charges that recharge on their own.",
+      "where": "Secret rare: turns up very rarely in chests (a Lucky Locator helps), or trade for it. It only shows in the in-game list once you have it",
       "variants": [
         "base"
       ]
