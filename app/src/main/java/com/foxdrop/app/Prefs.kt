@@ -18,6 +18,7 @@ enum class AlertKind(val key: String, val title: String, val blurb: String) {
     NEWS("news", "News", "New in-game news posts and Epic notices"),
     COSMETICS("cosmetics", "New cosmetics", "When new skins, emotes and more are added to the game files"),
     EVENTS("events", "Live events", "A day, an hour and 10 minutes before a live event, when it goes live, and when a new one is announced"),
+    SPRITES("sprites", "New Sprites", "When a new Sprite or a new form of one comes out"),
     CHAT("chat", "Fox Chat & tips", "New Fox Chat messages and event tips from your crew"),
     APP("app", "Fox Drop updates", "When a new version of Fox Drop is ready to download");
 

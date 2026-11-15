@@ -87,6 +87,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
 import kotlinx.coroutines.delay
 import java.time.Duration
@@ -229,10 +231,13 @@ private fun ItemTile(
     wished: Boolean, onWish: () -> Unit, badge: String? = null,
 ) {
     val c = rarityColor(rarity)
+    var big by remember { mutableStateOf(false) }
+    if (big) BigPicture(title, subtitle, c, image, wished, onWish, onClose = { big = false })
     Card(
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = Panel),
         border = if (wished) BorderStroke(3.dp, Color(0xFFFFD54F)) else null,
+        modifier = Modifier.clickable { big = true },
     ) {
         Box(
             Modifier.fillMaxWidth().aspectRatio(1f)
@@ -257,6 +262,39 @@ private fun ItemTile(
         Column(Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
             Text(title, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(subtitle, fontSize = 12.sp, color = Color.White.copy(alpha = 0.75f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+    }
+}
+
+/** Tapping a tile shows its picture as big as the screen allows. Tap anywhere to close. */
+@Composable
+private fun BigPicture(
+    title: String, subtitle: String, c: Color, image: String?,
+    wished: Boolean, onWish: () -> Unit, onClose: () -> Unit,
+) {
+    Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Card(
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(containerColor = Panel),
+            modifier = Modifier.fillMaxWidth().padding(16.dp).clickable(onClick = onClose),
+        ) {
+            Box(
+                Modifier.fillMaxWidth().aspectRatio(1f)
+                    .background(Brush.verticalGradient(listOf(c.copy(alpha = 0.95f), c.copy(alpha = 0.35f)))),
+            ) {
+                AsyncImage(image, title, Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
+                IconButton(onClick = onWish, modifier = Modifier.align(Alignment.TopEnd)) {
+                    Icon(
+                        if (wished) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        if (wished) "Remove from wishlist" else "Add to wishlist",
+                        tint = if (wished) Color(0xFFFF4D6D) else Color.White,
+                    )
+                }
+            }
+            Column(Modifier.padding(16.dp)) {
+                Text(title, fontWeight = FontWeight.Black, fontSize = 22.sp)
+                Text(subtitle, fontSize = 14.sp, color = Color.White.copy(alpha = 0.75f))
+            }
         }
     }
 }

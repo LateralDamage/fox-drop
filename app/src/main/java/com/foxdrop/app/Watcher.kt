@@ -62,6 +62,7 @@ class Watcher(private val context: Context, private val api: Api, private val pr
         runCatching { checkStatus() }
         runCatching { if (Crew.configured) { Crew.signIn(); prefs.cloudEvents = Crew.fetchEvents() } }
         runCatching { checkEvents() }
+        runCatching { checkSprites() }
         runCatching { checkChat() }
         runCatching { checkTips() }
         runCatching { checkReports() }
@@ -235,6 +236,50 @@ class Watcher(private val context: Context, private val api: Api, private val pr
                 whenText + (if (e.note.isNotBlank()) "\n${e.note}" else "") + "\nFox Drop will count down and remind you.",
                 id = ("new" + e.id).hashCode(),
             )
+        }
+    }
+
+    /**
+     * New Sprites and new forms, from the hand-kept sprites.json. Locked forms aren't in a Sprite's variants
+     * until their day passes, so a Gold unlock alerts on its day even when the file didn't change.
+     */
+    private suspend fun checkSprites() {
+        val json = api.spritesJson()
+        prefs.remoteSprites = json
+        val list = SpriteList.parse(json)
+        val keys = list.keys.toSet()
+        val before = prefs.seenSet("sprite_keys")
+        prefs.setSeenSet("sprite_keys", keys)
+        if (before == null) return
+        val fresh = keys - before
+        if (fresh.isEmpty()) return
+        val knownFamilies = before.map { it.substringBefore(':') }.toSet()
+        val names = list.variants.associate { it.id to it.name }
+        val (newFamilies, newForms) = list.sprites.filter { s -> s.variants.any { "${s.id}:$it" in fresh } }
+            .partition { it.id !in knownFamilies }
+        // A whole new season roster is one alert, not a dozen.
+        if (newFamilies.size > 4) {
+            alert(AlertKind.SPRITES, Tab.SPRITES, "✨ ${newFamilies.size} new Sprites to collect", list.season.ifBlank { "A new Sprite list is out." }, id = 8000)
+            return
+        }
+        newFamilies.forEach { s ->
+            alert(
+                AlertKind.SPRITES, Tab.SPRITES, "✨ New Sprite: ${s.name}",
+                listOf(s.ability, s.where).filter { it.isNotBlank() }.joinToString("\n"),
+                id = ("sprite" + s.id).hashCode(),
+            )
+        }
+        if (newForms.isNotEmpty()) {
+            val byForm = newForms.flatMap { s -> s.variants.filter { "${s.id}:$it" in fresh }.map { it to s.name } }
+                .groupBy({ it.first }, { it.second })
+            byForm.forEach { (form, who) ->
+                val label = names[form] ?: form.replaceFirstChar { it.uppercase() }
+                alert(
+                    AlertKind.SPRITES, Tab.SPRITES, "✨ $label Sprites are out",
+                    who.take(6).joinToString(", ") + (if (who.size > 6) " and ${who.size - 6} more" else ""),
+                    id = ("spriteform" + form).hashCode(),
+                )
+            }
         }
     }
 

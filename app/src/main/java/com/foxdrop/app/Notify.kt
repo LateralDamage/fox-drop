@@ -25,6 +25,7 @@ object Notify {
         AlertKind.NEWS to NotificationManager.IMPORTANCE_DEFAULT,
         AlertKind.COSMETICS to NotificationManager.IMPORTANCE_DEFAULT,
         AlertKind.EVENTS to NotificationManager.IMPORTANCE_HIGH,
+        AlertKind.SPRITES to NotificationManager.IMPORTANCE_DEFAULT,
         AlertKind.CHAT to NotificationManager.IMPORTANCE_DEFAULT,
         AlertKind.APP to NotificationManager.IMPORTANCE_DEFAULT,
     )
